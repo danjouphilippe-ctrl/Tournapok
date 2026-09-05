@@ -1,0 +1,50 @@
+<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="rim05" x1="15%" y1="10%" x2="85%" y2="95%">
+      <stop offset="0%" stop-color="#575757"/>
+      <stop offset="55%" stop-color="#161616"/>
+      <stop offset="100%" stop-color="#0e0e0e"/>
+    </linearGradient>
+    <radialGradient id="face05" cx="38%" cy="32%" r="75%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="100%" stop-color="#e5ded9"/>
+    </radialGradient>
+    <linearGradient id="edge05" x1="20%" y1="0%" x2="80%" y2="100%">
+      <stop offset="0%" stop-color="#d78080"/>
+      <stop offset="100%" stop-color="#c23b3b"/>
+    </linearGradient>
+  </defs>
+
+  <circle cx="100" cy="100" r="97" fill="#0e0e0e"/>
+  <circle cx="100" cy="100" r="95" fill="url(#rim05)" stroke="#0e0e0e" stroke-width="1"/>
+
+  <rect x="94.5" y="6.5" width="11" height="17" rx="2.5" fill="url(#edge05)" stroke="#882929" stroke-width="0.6" transform="rotate(0.0 100 100)"/>
+  <rect x="94.5" y="6.5" width="11" height="17" rx="2.5" fill="url(#edge05)" stroke="#882929" stroke-width="0.6" transform="rotate(18.0 100 100)"/>
+  <rect x="94.5" y="6.5" width="11" height="17" rx="2.5" fill="url(#edge05)" stroke="#882929" stroke-width="0.6" transform="rotate(36.0 100 100)"/>
+  <rect x="94.5" y="6.5" width="11" height="17" rx="2.5" fill="url(#edge05)" stroke="#882929" stroke-width="0.6" transform="rotate(54.0 100 100)"/>
+  <rect x="94.5" y="6.5" width="11" height="17" rx="2.5" fill="url(#edge05)" stroke="#882929" stroke-width="0.6" transform="rotate(72.0 100 100)"/>
+  <rect x="94.5" y="6.5" width="11" height="17" rx="2.5" fill="url(#edge05)" stroke="#882929" stroke-width="0.6" transform="rotate(90.0 100 100)"/>
+  <rect x="94.5" y="6.5" width="11" height="17" rx="2.5" fill="url(#edge05)" stroke="#882929" stroke-width="0.6" transform="rotate(108.0 100 100)"/>
+  <rect x="94.5" y="6.5" width="11" height="17" rx="2.5" fill="url(#edge05)" stroke="#882929" stroke-width="0.6" transform="rotate(126.0 100 100)"/>
+  <rect x="94.5" y="6.5" width="11" height="17" rx="2.5" fill="url(#edge05)" stroke="#882929" stroke-width="0.6" transform="rotate(144.0 100 100)"/>
+  <rect x="94.5" y="6.5" width="11" height="17" rx="2.5" fill="url(#edge05)" stroke="#882929" stroke-width="0.6" transform="rotate(162.0 100 100)"/>
+  <rect x="94.5" y="6.5" width="11" height="17" rx="2.5" fill="url(#edge05)" stroke="#882929" stroke-width="0.6" transform="rotate(180.0 100 100)"/>
+  <rect x="94.5" y="6.5" width="11" height="17" rx="2.5" fill="url(#edge05)" stroke="#882929" stroke-width="0.6" transform="rotate(198.0 100 100)"/>
+  <rect x="94.5" y="6.5" width="11" height="17" rx="2.5" fill="url(#edge05)" stroke="#882929" stroke-width="0.6" transform="rotate(216.0 100 100)"/>
+  <rect x="94.5" y="6.5" width="11" height="17" rx="2.5" fill="url(#edge05)" stroke="#882929" stroke-width="0.6" transform="rotate(234.0 100 100)"/>
+  <rect x="94.5" y="6.5" width="11" height="17" rx="2.5" fill="url(#edge05)" stroke="#882929" stroke-width="0.6" transform="rotate(252.0 100 100)"/>
+  <rect x="94.5" y="6.5" width="11" height="17" rx="2.5" fill="url(#edge05)" stroke="#882929" stroke-width="0.6" transform="rotate(270.0 100 100)"/>
+  <rect x="94.5" y="6.5" width="11" height="17" rx="2.5" fill="url(#edge05)" stroke="#882929" stroke-width="0.6" transform="rotate(288.0 100 100)"/>
+  <rect x="94.5" y="6.5" width="11" height="17" rx="2.5" fill="url(#edge05)" stroke="#882929" stroke-width="0.6" transform="rotate(306.0 100 100)"/>
+  <rect x="94.5" y="6.5" width="11" height="17" rx="2.5" fill="url(#edge05)" stroke="#882929" stroke-width="0.6" transform="rotate(324.0 100 100)"/>
+  <rect x="94.5" y="6.5" width="11" height="17" rx="2.5" fill="url(#edge05)" stroke="#882929" stroke-width="0.6" transform="rotate(342.0 100 100)"/>
+
+  <circle cx="100" cy="100" r="79" fill="none" stroke="#882929" stroke-width="1" opacity="0.55"/>
+  <circle cx="100" cy="100" r="77" fill="none" stroke="#d78080" stroke-width="1" opacity="0.7"/>
+
+  <circle cx="100" cy="100" r="72" fill="#0e0e0e"/>
+  <circle cx="100" cy="100" r="70" fill="url(#face05)" stroke="#161616" stroke-width="2.5"/>
+  <circle cx="100" cy="100" r="61" fill="none" stroke="#c23b3b" stroke-width="1.4" opacity="0.85"/>
+
+  <text x="100" y="128" font-size="76" text-anchor="middle" fill="#c23b3b" font-family="Georgia, 'Times New Roman', serif" opacity="0.95">♠</text>
+</svg>
