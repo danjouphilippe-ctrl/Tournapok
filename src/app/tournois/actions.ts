@@ -442,9 +442,12 @@ export async function respondToJoinRequest(requestId: string, approve: boolean) 
   if (!request || request.status !== "pending") return;
 
   if (approve) {
-    await supabase
+    const { error } = await supabase
       .from("tournament_players")
       .insert({ tournament_id: request.tournament_id, player_id: request.requester_id });
+    if (error) {
+      redirect(`/tournois/${request.tournament_id}?erreur=${encodeURIComponent(error.message)}`);
+    }
     await seatLateJoiner(supabase, request.tournament_id, request.requester_id);
     await supabase
       .from("tournament_join_requests")
@@ -511,9 +514,14 @@ export async function respondToInvitation(invitationId: string, accept: boolean)
   }
 
   if (accept) {
-    await supabase
+    const { error } = await supabase
       .from("tournament_players")
       .insert({ tournament_id: invitation.tournament_id, player_id: user.id });
+    if (error) {
+      redirect(
+        `/tournois/${invitation.tournament_id}?erreur=${encodeURIComponent(error.message)}`,
+      );
+    }
     await seatLateJoiner(supabase, invitation.tournament_id, user.id);
     await supabase
       .from("tournament_invitations")
@@ -805,9 +813,12 @@ export async function addPlayerByPseudo(tournamentId: string, formData: FormData
 
   if (!profile) return;
 
-  await supabase
+  const { error } = await supabase
     .from("tournament_players")
     .insert({ tournament_id: tournamentId, player_id: profile.id });
+  if (error) {
+    redirect(`/tournois/${tournamentId}?erreur=${encodeURIComponent(error.message)}`);
+  }
   await seatLateJoiner(supabase, tournamentId, profile.id);
 
   revalidatePath(`/tournois/${tournamentId}`);
@@ -837,7 +848,10 @@ export async function updateDisplayConfig(tournamentId: string, formData: FormDa
   revalidatePath(`/tournois/${tournamentId}`);
 }
 
-export async function rebuyPlayer(tournamentId: string, playerId: string) {
+export async function rebuyPlayer(
+  tournamentId: string,
+  playerId: string,
+): Promise<{ error?: string }> {
   const supabase = await createClient();
 
   const { data: tournament } = await supabase
@@ -855,25 +869,31 @@ export async function rebuyPlayer(tournamentId: string, playerId: string) {
     .eq("player_id", playerId)
     .single();
 
-  if (!tournament || !player) return;
-  if (!tournament.rebuy_enabled || player.status !== "inscrit") return;
+  if (!tournament || !player) return { error: "Impossible de trouver le tournoi ou le joueur." };
+  if (!tournament.rebuy_enabled || player.status !== "inscrit") {
+    return { error: "La recave n'est pas disponible pour ce joueur." };
+  }
   if (
     tournament.rebuy_max_per_player !== null &&
     player.rebuys_count >= tournament.rebuy_max_per_player
   ) {
-    return;
+    return { error: `Nombre maximum de recaves déjà atteint (${tournament.rebuy_max_per_player}).` };
   }
   if (
     tournament.rebuy_stack_threshold !== null &&
     (player.stack ?? 0) > tournament.rebuy_stack_threshold
   ) {
-    return;
+    return {
+      error: `La recave n'est autorisée que si le tapis est ≤ ${tournament.rebuy_stack_threshold} jetons.`,
+    };
   }
   if (
     tournament.rebuy_until_level !== null &&
     tournament.current_level > tournament.rebuy_until_level
   ) {
-    return;
+    return {
+      error: `La recave n'est plus autorisée après le niveau ${tournament.rebuy_until_level}.`,
+    };
   }
 
   await supabase
@@ -886,9 +906,13 @@ export async function rebuyPlayer(tournamentId: string, playerId: string) {
     .eq("player_id", playerId);
 
   revalidatePath(`/tournois/${tournamentId}`);
+  return {};
 }
 
-export async function addOnPlayer(tournamentId: string, playerId: string) {
+export async function addOnPlayer(
+  tournamentId: string,
+  playerId: string,
+): Promise<{ error?: string }> {
   const supabase = await createClient();
 
   const { data: tournament } = await supabase
@@ -904,14 +928,18 @@ export async function addOnPlayer(tournamentId: string, playerId: string) {
     .eq("player_id", playerId)
     .single();
 
-  if (!tournament || !player) return;
-  if (!tournament.addon_enabled || player.status !== "inscrit") return;
-  if (player.addon_used) return;
+  if (!tournament || !player) return { error: "Impossible de trouver le tournoi ou le joueur." };
+  if (!tournament.addon_enabled || player.status !== "inscrit") {
+    return { error: "L'add-on n'est pas disponible pour ce joueur." };
+  }
+  if (player.addon_used) return { error: "L'add-on a déjà été utilisé." };
   if (
     tournament.addon_at_level !== null &&
     tournament.current_level < tournament.addon_at_level
   ) {
-    return;
+    return {
+      error: `L'add-on n'est pas encore disponible (à partir du niveau ${tournament.addon_at_level}, niveau actuel ${tournament.current_level}).`,
+    };
   }
 
   await supabase
@@ -924,6 +952,7 @@ export async function addOnPlayer(tournamentId: string, playerId: string) {
     .eq("player_id", playerId);
 
   revalidatePath(`/tournois/${tournamentId}`);
+  return {};
 }
 
 export async function toggleBuyInPaid(tournamentId: string, playerId: string) {

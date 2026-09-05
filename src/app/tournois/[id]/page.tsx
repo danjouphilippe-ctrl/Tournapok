@@ -24,6 +24,7 @@ import {
 } from "@/app/tournois/actions";
 import { DeleteTournamentButton } from "@/components/DeleteTournamentButton";
 import { PseudoAutocomplete } from "@/components/PseudoAutocomplete";
+import { ConfirmButton } from "@/components/ConfirmButton";
 
 type DisplayConfig = {
   title: string | null;
@@ -65,10 +66,13 @@ function getEliminatorPseudo(p: { eliminator: { pseudo: string }[] | { pseudo: s
 
 export default async function TournoiPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ erreur?: string }>;
 }) {
   const { id } = await params;
+  const { erreur } = await searchParams;
   const supabase = await createClient();
   const {
     data: { user },
@@ -177,6 +181,12 @@ export default async function TournoiPage({
 
   return (
     <main className="page">
+      {erreur && (
+        <p className="card text-sm text-danger" role="alert">
+          {erreur}
+        </p>
+      )}
+
       <div className="flex flex-col gap-2">
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-center gap-3">
@@ -514,18 +524,35 @@ export default async function TournoiPage({
               {tournament.status === "en_cours" && canManage && (
                 <div className="flex flex-wrap items-center gap-3 border-t border-line pt-2 text-sm">
                   {tournament.rebuy_enabled && (
-                    <form action={rebuyPlayer.bind(null, tournament.id, p.player_id)}>
-                      <button type="submit" className="link">
-                        Recave
-                      </button>
-                    </form>
+                    <ConfirmButton
+                      label="Recave"
+                      confirmLabel="Valider la recave"
+                      message={`Valider l'achat d'une recave pour ${getPseudo(p)} ?`}
+                      disabled={
+                        (tournament.rebuy_max_per_player !== null &&
+                          p.rebuys_count >= tournament.rebuy_max_per_player) ||
+                        (tournament.rebuy_stack_threshold !== null &&
+                          (p.stack ?? 0) > tournament.rebuy_stack_threshold) ||
+                        (tournament.rebuy_until_level !== null &&
+                          tournament.current_level > tournament.rebuy_until_level)
+                      }
+                      onConfirm={rebuyPlayer.bind(null, tournament.id, p.player_id)}
+                      className="btn btn-success btn-sm"
+                    />
                   )}
-                  {tournament.addon_enabled && !p.addon_used && (
-                    <form action={addOnPlayer.bind(null, tournament.id, p.player_id)}>
-                      <button type="submit" className="link">
-                        Add-on
-                      </button>
-                    </form>
+                  {tournament.addon_enabled && (
+                    <ConfirmButton
+                      label="Add-on"
+                      confirmLabel="Valider l'add-on"
+                      message={`Valider l'achat d'un add-on pour ${getPseudo(p)} ?`}
+                      disabled={
+                        p.addon_used ||
+                        (tournament.addon_at_level !== null &&
+                          tournament.current_level < tournament.addon_at_level)
+                      }
+                      onConfirm={addOnPlayer.bind(null, tournament.id, p.player_id)}
+                      className="btn btn-success btn-sm"
+                    />
                   )}
                   <form
                     action={eliminatePlayer.bind(null, tournament.id, p.player_id)}

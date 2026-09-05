@@ -133,6 +133,28 @@ input[type="radio"] {
   border-color: var(--color-ink-faint);
 }
 
+.btn-success {
+  background: rgba(79, 145, 102, 0.16);
+  border: 1px solid rgba(79, 145, 102, 0.55);
+  color: #8fd1a4;
+}
+.btn-success:hover:not(:disabled) {
+  background: rgba(79, 145, 102, 0.28);
+  border-color: #8fd1a4;
+  color: #bfe8cc;
+}
+
+.btn-danger {
+  background: rgba(214, 82, 79, 0.14);
+  border: 1px solid rgba(214, 82, 79, 0.55);
+  color: var(--color-danger);
+}
+.btn-danger:hover:not(:disabled) {
+  background: rgba(214, 82, 79, 0.26);
+  border-color: var(--color-danger-strong);
+  color: var(--color-danger-strong);
+}
+
 .btn-sm {
   padding: 0.35rem 0.75rem;
   font-size: 0.8125rem;
@@ -182,6 +204,19 @@ input[type="radio"] {
   border-color: rgba(79, 145, 102, 0.5);
   background: rgba(79, 145, 102, 0.14);
   color: #8fd1a4;
+}
+
+.clock-tile {
+  background: linear-gradient(155deg, var(--color-surface) 0%, var(--color-surface-2) 100%);
+  border: 1px solid var(--color-line);
+  border-left: 3px solid var(--color-accent);
+  border-radius: 0.875rem;
+  padding: 1rem 1.25rem;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.25);
+}
+
+.clock-tile-success {
+  border-left-color: var(--color-success);
 }
 
 .page {
