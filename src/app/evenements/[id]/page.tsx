@@ -85,7 +85,8 @@ export default async function EvenementPage({
         {event.description && <p className="text-sm text-ink-soft">{event.description}</p>}
         <p className="text-sm text-ink-soft">
           Créé par {organizer?.pseudo ?? "—"}
-          {event.scheduled_at && ` · ${new Date(event.scheduled_at).toLocaleString("fr-FR")}`}
+          {event.scheduled_at &&
+            ` · ${new Date(event.scheduled_at).toLocaleString("fr-FR", { timeZone: "Europe/Paris" })}`}
         </p>
         {event.location && (
           <p className="text-sm text-ink-soft">

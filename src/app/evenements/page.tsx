@@ -67,7 +67,7 @@ export default async function EvenementsPage() {
                       Par {creatorPseudoById.get(e.created_by) ?? "—"}
                       {e.location ? ` · 📍 ${e.location}` : ""}
                       {e.scheduled_at
-                        ? ` · ${new Date(e.scheduled_at).toLocaleDateString("fr-FR")}`
+                        ? ` · ${new Date(e.scheduled_at).toLocaleDateString("fr-FR", { timeZone: "Europe/Paris" })}`
                         : ""}
                       {" · "}
                       {count} tournoi{count > 1 ? "s" : ""}

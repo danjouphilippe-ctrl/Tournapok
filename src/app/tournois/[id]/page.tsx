@@ -205,7 +205,7 @@ export default async function TournoiPage({
           {tournament.starting_stack} jetons · {tournament.min_players} à{" "}
           {tournament.max_players ?? "∞"} joueurs
           {tournament.scheduled_at &&
-            ` · ${new Date(tournament.scheduled_at).toLocaleString("fr-FR")}`}
+            ` · ${new Date(tournament.scheduled_at).toLocaleString("fr-FR", { timeZone: "Europe/Paris" })}`}
         </p>
         {tournament.location && (
           <p className="text-sm text-ink-soft">
