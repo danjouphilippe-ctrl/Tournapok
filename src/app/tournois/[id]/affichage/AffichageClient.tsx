@@ -324,7 +324,7 @@ export function AffichageClient({
   return (
     <main
       className={`flex flex-col gap-3 bg-background px-4 py-3 text-foreground lg:px-6 ${
-        isRunningScreen ? "h-screen overflow-hidden" : "min-h-screen py-6 gap-6"
+        isRunningScreen ? "h-screen overflow-y-auto" : "min-h-screen py-6 gap-6"
       }`}
     >
       {!isRunningScreen && (
@@ -384,14 +384,14 @@ export function AffichageClient({
         <div className="flex min-h-0 flex-1 flex-col gap-3">
         <div className="grid min-h-0 flex-1 grid-cols-1 gap-3 lg:grid-cols-[320px_1fr_320px]">
           {/* Colonne gauche : logo + statistiques d'inscription */}
-          <div className="flex h-full flex-col gap-2">
+          <div className="flex h-full min-h-0 flex-col gap-2">
             {tournament.chip_image_url && (
               <div className="clock-tile flex shrink-0 items-center justify-center py-4">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={tournament.chip_image_url}
                   alt=""
-                  className="h-40 w-40 shrink-0 rounded-full border border-line object-cover"
+                  className="h-[clamp(4rem,14vh,10rem)] w-[clamp(4rem,14vh,10rem)] shrink-0 rounded-full border border-line object-cover"
                 />
               </div>
             )}
@@ -405,8 +405,8 @@ export function AffichageClient({
 
           {/* Colonne centrale : horloge + stats de jeu */}
           <div className="flex min-h-0 flex-col gap-3">
-            <div className="clock-tile flex flex-1 flex-col items-center justify-evenly py-4">
-              <h2 className="mb-8 text-center font-display text-6xl font-bold leading-tight">
+            <div className="clock-tile flex min-h-0 flex-1 flex-col items-center justify-evenly overflow-hidden py-2">
+              <h2 className="mb-[clamp(0.5rem,4vh,2rem)] text-center font-display text-[clamp(1.5rem,5.5vh,3.75rem)] font-bold leading-tight">
                 {cfg.title || tournament.name}
               </h2>
 
@@ -456,7 +456,7 @@ export function AffichageClient({
               </p>
 
               <p
-                className={`font-mono text-[10rem] font-bold leading-none tabular-nums ${
+                className={`font-mono text-[clamp(3rem,14vh,10rem)] font-bold leading-none tabular-nums ${
                   isPaused
                     ? "text-ink-faint"
                     : isFinalCountdown
@@ -467,24 +467,26 @@ export function AffichageClient({
                 {formatDuration(remainingSeconds)}
               </p>
 
-              <div className="h-2 w-full max-w-lg overflow-hidden rounded-full bg-surface-2">
+              <div className="h-2 w-full max-w-lg shrink-0 overflow-hidden rounded-full bg-surface-2">
                 <div
                   className="h-full bg-accent transition-all"
                   style={{ width: `${levelProgress * 100}%` }}
                 />
               </div>
 
-              <div className="flex flex-col items-center gap-2">
+              <div className="flex flex-col items-center gap-1">
                 {currentLevel?.is_break ? (
-                  <p className="text-5xl font-semibold text-accent">Pause</p>
+                  <p className="text-[clamp(1.25rem,4.5vh,3rem)] font-semibold text-accent">
+                    Pause
+                  </p>
                 ) : (
-                  <p className="text-5xl font-semibold">
+                  <p className="text-[clamp(1.25rem,4.5vh,3rem)] font-semibold">
                     Blindes : {currentLevel?.small_blind ?? "-"} / {currentLevel?.big_blind ?? "-"}
                     {currentLevel && currentLevel.ante > 0 ? ` · Ante ${currentLevel.ante}` : ""}
                   </p>
                 )}
                 {nextLevelData && (
-                  <p className="text-2xl text-ink-soft">
+                  <p className="text-[clamp(0.875rem,2.5vh,1.5rem)] text-ink-soft">
                     Prochain :{" "}
                     {nextLevelData.is_break
                       ? "Pause"
@@ -494,7 +496,7 @@ export function AffichageClient({
                   </p>
                 )}
                 {cfg.show_next_break && nextBreakSeconds !== null && (
-                  <p className="text-2xl text-ink-soft">
+                  <p className="text-[clamp(0.875rem,2.5vh,1.5rem)] text-ink-soft">
                     Prochaine pause :{" "}
                     <span className="font-semibold text-foreground">
                       {formatDuration(nextBreakSeconds)}
@@ -567,18 +569,18 @@ export function AffichageClient({
         </div>
 
         {cfg.show_prize_pool && (
-          <div className="clock-tile clock-tile-success flex shrink-0 flex-wrap items-center justify-center gap-x-10 gap-y-2 py-5">
-            <p className="text-2xl">
+          <div className="clock-tile clock-tile-success flex shrink-0 flex-wrap items-center justify-center gap-x-10 gap-y-1 py-[clamp(0.5rem,2vh,1.25rem)]">
+            <p className="text-[clamp(0.875rem,2.2vh,1.5rem)]">
               Prize pool :{" "}
-              <span className="text-3xl font-semibold">
+              <span className="text-[clamp(1rem,2.6vh,1.875rem)] font-semibold">
                 {prizePool.toLocaleString("fr-FR")} €
               </span>
             </p>
             {cfg.show_payouts &&
               payouts.map((p) => (
-              <p key={p.place} className="text-2xl">
+              <p key={p.place} className="text-[clamp(0.875rem,2.2vh,1.5rem)]">
                 {p.place === 1 ? "🏆 1er" : `${p.place}e`} :{" "}
-                <span className="text-3xl font-semibold">
+                <span className="text-[clamp(1rem,2.6vh,1.875rem)] font-semibold">
                   {Math.round((prizePool * p.percentage) / 100).toLocaleString("fr-FR")} €
                 </span>
               </p>
@@ -608,17 +610,23 @@ function Stat({
     <div
       className={`clock-tile ${variant === "success" ? "clock-tile-success" : ""} ${
         grow
-          ? "flex flex-1 flex-col items-center justify-center gap-1 py-8 text-center"
+          ? "flex min-h-0 flex-1 flex-col items-center justify-center gap-1 overflow-hidden py-[clamp(0.5rem,2vh,2rem)] text-center"
           : compact
             ? "py-2"
             : ""
       }`}
     >
-      <p className={grow ? "text-base text-ink-soft" : "text-xs text-ink-soft"}>{label}</p>
+      <p
+        className={
+          grow ? "text-[clamp(0.7rem,1.8vh,1rem)] text-ink-soft" : "text-xs text-ink-soft"
+        }
+      >
+        {label}
+      </p>
       <p
         className={
           grow
-            ? "text-4xl font-semibold"
+            ? "text-[clamp(1.25rem,4vh,2.25rem)] font-semibold"
             : compact
               ? "text-lg font-semibold"
               : "text-2xl font-semibold"
