@@ -2,7 +2,15 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { headers } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
+
+async function getSiteOrigin() {
+  const h = await headers();
+  const host = h.get("host") ?? "localhost:3000";
+  const proto = h.get("x-forwarded-proto") ?? (host.startsWith("localhost") ? "http" : "https");
+  return `${proto}://${host}`;
+}
 
 export type AuthFormState = {
   error: string | null;
@@ -68,4 +76,49 @@ export async function logout() {
   await supabase.auth.signOut();
   revalidatePath("/", "layout");
   redirect("/connexion");
+}
+
+export async function requestPasswordReset(
+  _prevState: AuthFormState,
+  formData: FormData,
+): Promise<AuthFormState> {
+  const supabase = await createClient();
+
+  const email = String(formData.get("email") ?? "").trim();
+  if (!email) {
+    return { error: "Merci de renseigner ton email." };
+  }
+
+  const origin = await getSiteOrigin();
+  await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: `${origin}/auth/confirm?next=/reinitialiser-mot-de-passe`,
+  });
+
+  // On redirige vers le même message que l'email existe ou non,
+  // pour ne pas révéler quels emails sont inscrits sur le site.
+  redirect("/mot-de-passe-oublie/verifiez-vos-emails");
+}
+
+export async function updatePassword(
+  _prevState: AuthFormState,
+  formData: FormData,
+): Promise<AuthFormState> {
+  const supabase = await createClient();
+
+  const password = String(formData.get("password") ?? "");
+  const confirmPassword = String(formData.get("confirm_password") ?? "");
+
+  if (password.length < 6) {
+    return { error: "Le mot de passe doit faire au moins 6 caractères." };
+  }
+  if (password !== confirmPassword) {
+    return { error: "Les mots de passe ne correspondent pas." };
+  }
+
+  const { error } = await supabase.auth.updateUser({ password });
+  if (error) {
+    return { error: "Impossible de mettre à jour le mot de passe. Redemande un lien." };
+  }
+
+  redirect("/tableau-de-bord");
 }
