@@ -83,6 +83,8 @@ export async function createStructure(
 }
 
 export async function rateStructure(structureId: string, rating: number) {
+  if (!Number.isInteger(rating) || rating < 1 || rating > 5) return;
+
   const supabase = await createClient();
   const {
     data: { user },

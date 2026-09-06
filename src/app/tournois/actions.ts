@@ -106,6 +106,18 @@ function parseTournamentFields(formData: FormData): ParsedTournamentFields {
   if (!Number.isFinite(startingStack) || startingStack <= 0) {
     return { ok: false, error: "Le tapis de départ doit être un nombre positif." };
   }
+  if (!Number.isFinite(tableSize) || tableSize < 2) {
+    return { ok: false, error: "Le nombre de joueurs par table doit être d'au moins 2." };
+  }
+  if (!Number.isFinite(minPlayers) || minPlayers < 1) {
+    return { ok: false, error: "Le nombre minimum de joueurs doit être d'au moins 1." };
+  }
+  if (maxPlayers !== null && maxPlayers < minPlayers) {
+    return {
+      ok: false,
+      error: "Le nombre maximum de joueurs ne peut pas être inférieur au minimum.",
+    };
+  }
   if (rebuyEnabled && (!rebuyPrice || !rebuyChips)) {
     return { ok: false, error: "Renseigne le prix et les jetons de la recave." };
   }
@@ -136,6 +148,13 @@ function parseTournamentFields(formData: FormData): ParsedTournamentFields {
   }
   if (!Array.isArray(payouts)) payouts = [];
   if (payouts.length > 0) {
+    if (payouts.some((p) => p.percentage < 0)) {
+      return { ok: false, error: "Un pourcentage de gain ne peut pas être négatif." };
+    }
+    const places = payouts.map((p) => p.place);
+    if (new Set(places).size !== places.length) {
+      return { ok: false, error: "Chaque place ne peut apparaître qu'une seule fois." };
+    }
     const total = payouts.reduce((sum, p) => sum + p.percentage, 0);
     if (Math.abs(total - 100) > 0.5) {
       return {
@@ -465,10 +484,8 @@ export async function respondToJoinRequest(requestId: string, approve: boolean) 
 
 export async function inviteToTournament(tournamentId: string, formData: FormData) {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) redirect("/connexion");
+  const access = await getManageAccess(supabase, tournamentId);
+  if (!access) return;
 
   const pseudo = String(formData.get("pseudo") ?? "").trim();
   if (!pseudo) return;
@@ -481,17 +498,26 @@ export async function inviteToTournament(tournamentId: string, formData: FormDat
 
   if (!profile) return;
 
-  await supabase.from("tournament_invitations").insert({
+  const { error } = await supabase.from("tournament_invitations").insert({
     tournament_id: tournamentId,
     invited_user_id: profile.id,
-    invited_by: user.id,
+    invited_by: access.userId,
   });
+
+  if (error) {
+    const message =
+      error.code === "23505"
+        ? "Ce joueur a déjà été invité."
+        : error.message;
+    redirect(`/tournois/${tournamentId}?erreur=${encodeURIComponent(message)}`);
+  }
 
   revalidatePath(`/tournois/${tournamentId}`);
 }
 
 export async function cancelInvitation(invitationId: string, tournamentId: string) {
   const supabase = await createClient();
+  if (!(await getManageAccess(supabase, tournamentId))) return;
   await supabase.from("tournament_invitations").delete().eq("id", invitationId);
   revalidatePath(`/tournois/${tournamentId}`);
 }
@@ -566,6 +592,39 @@ async function getMaxLevel(
   return data?.level_number ?? 1;
 }
 
+/** Vérifie que l'utilisateur connecté est l'organisateur ou un
+ * co-administrateur du tournoi. Ne doit jamais remplacer les policies
+ * RLS (qui restent la protection réelle), mais évite qu'une action
+ * échoue en silence quand elles bloquent la mise à jour : on le sait
+ * tout de suite, avant même de tenter l'écriture. */
+async function getManageAccess(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  tournamentId: string,
+): Promise<{ userId: string; isOwner: boolean } | null> {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return null;
+
+  const { data: tournament } = await supabase
+    .from("tournaments")
+    .select("created_by")
+    .eq("id", tournamentId)
+    .single();
+  if (!tournament) return null;
+  if (tournament.created_by === user.id) return { userId: user.id, isOwner: true };
+
+  const { data: admin } = await supabase
+    .from("tournament_admins")
+    .select("user_id")
+    .eq("tournament_id", tournamentId)
+    .eq("user_id", user.id)
+    .maybeSingle();
+  if (!admin) return null;
+
+  return { userId: user.id, isOwner: false };
+}
+
 async function writeSeating(
   supabase: Awaited<ReturnType<typeof createClient>>,
   tournamentId: string,
@@ -614,12 +673,23 @@ async function seatLateJoiner(
 
 export async function startTournament(tournamentId: string) {
   const supabase = await createClient();
+  if (!(await getManageAccess(supabase, tournamentId))) return;
 
   const { data: tournament } = await supabase
     .from("tournaments")
-    .select("table_size")
+    .select("status, min_players, table_size")
     .eq("id", tournamentId)
     .single();
+
+  if (!tournament || tournament.status !== "inscription") return;
+
+  const { data: players } = await supabase
+    .from("tournament_players")
+    .select("player_id")
+    .eq("tournament_id", tournamentId)
+    .eq("status", "inscrit");
+
+  if (!players || players.length < tournament.min_players) return;
 
   const firstLevel = await getLevel(supabase, tournamentId, 1);
   const durationSeconds = (firstLevel?.duration_minutes ?? 20) * 60;
@@ -636,22 +706,15 @@ export async function startTournament(tournamentId: string) {
     })
     .eq("id", tournamentId);
 
-  const { data: players } = await supabase
-    .from("tournament_players")
-    .select("player_id")
-    .eq("tournament_id", tournamentId)
-    .eq("status", "inscrit");
-
-  if (players && players.length > 0 && tournament) {
-    const seats = initialSeating(players.map((p) => p.player_id), tournament.table_size);
-    await writeSeating(supabase, tournamentId, seats);
-  }
+  const seats = initialSeating(players.map((p) => p.player_id), tournament.table_size);
+  await writeSeating(supabase, tournamentId, seats);
 
   revalidatePath(`/tournois/${tournamentId}`);
 }
 
 export async function pauseClock(tournamentId: string) {
   const supabase = await createClient();
+  if (!(await getManageAccess(supabase, tournamentId))) return;
 
   const { data: tournament } = await supabase
     .from("tournaments")
@@ -680,6 +743,7 @@ export async function pauseClock(tournamentId: string) {
 
 export async function resumeClock(tournamentId: string) {
   const supabase = await createClient();
+  if (!(await getManageAccess(supabase, tournamentId))) return;
 
   const { data: tournament } = await supabase
     .from("tournaments")
@@ -724,6 +788,7 @@ async function setLevelPaused(
 
 export async function nextLevel(tournamentId: string) {
   const supabase = await createClient();
+  if (!(await getManageAccess(supabase, tournamentId))) return;
 
   const { data: tournament } = await supabase
     .from("tournaments")
@@ -742,6 +807,7 @@ export async function nextLevel(tournamentId: string) {
 
 export async function previousLevel(tournamentId: string) {
   const supabase = await createClient();
+  if (!(await getManageAccess(supabase, tournamentId))) return;
 
   const { data: tournament } = await supabase
     .from("tournaments")
@@ -826,6 +892,7 @@ export async function addPlayerByPseudo(tournamentId: string, formData: FormData
 
 export async function updateDisplayConfig(tournamentId: string, formData: FormData) {
   const supabase = await createClient();
+  if (!(await getManageAccess(supabase, tournamentId))) return;
 
   const config = {
     title: String(formData.get("title") ?? "").trim() || null,
@@ -853,6 +920,9 @@ export async function rebuyPlayer(
   playerId: string,
 ): Promise<{ error?: string }> {
   const supabase = await createClient();
+  if (!(await getManageAccess(supabase, tournamentId))) {
+    return { error: "Tu n'as pas les droits pour gérer ce tournoi." };
+  }
 
   const { data: tournament } = await supabase
     .from("tournaments")
@@ -914,6 +984,9 @@ export async function addOnPlayer(
   playerId: string,
 ): Promise<{ error?: string }> {
   const supabase = await createClient();
+  if (!(await getManageAccess(supabase, tournamentId))) {
+    return { error: "Tu n'as pas les droits pour gérer ce tournoi." };
+  }
 
   const { data: tournament } = await supabase
     .from("tournaments")
@@ -957,6 +1030,7 @@ export async function addOnPlayer(
 
 export async function toggleBuyInPaid(tournamentId: string, playerId: string) {
   const supabase = await createClient();
+  if (!(await getManageAccess(supabase, tournamentId))) return;
 
   const { data: player } = await supabase
     .from("tournament_players")
@@ -982,6 +1056,7 @@ export async function eliminatePlayer(
   formData: FormData,
 ) {
   const supabase = await createClient();
+  if (!(await getManageAccess(supabase, tournamentId))) return;
 
   const eliminatedById = String(formData.get("eliminated_by") ?? "") || null;
 
@@ -1003,6 +1078,7 @@ export async function eliminatePlayer(
   const place = total - alreadyOut;
 
   const eliminated = players.find((p) => p.player_id === playerId);
+  if (!eliminated || eliminated.status !== "inscrit") return;
 
   await supabase
     .from("tournament_players")
@@ -1020,7 +1096,9 @@ export async function eliminatePlayer(
     if (eliminator) {
       if (tournament.bounty_progressive) {
         const potBounty = eliminated.bounty_current ?? 0;
-        const cashGain = Math.round(potBounty / 2);
+        // Arrondi au centime (et non à l'unité) pour ne pas perdre de
+        // fractions à chaque élimination sur un tournoi à bounty progressif.
+        const cashGain = Math.round((potBounty / 2) * 100) / 100;
         await supabase
           .from("tournament_players")
           .update({
@@ -1078,10 +1156,8 @@ export async function eliminatePlayer(
 
 export async function addCoAdmin(tournamentId: string, formData: FormData) {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) redirect("/connexion");
+  const access = await getManageAccess(supabase, tournamentId);
+  if (!access?.isOwner) return;
 
   const pseudo = String(formData.get("pseudo") ?? "").trim();
   if (!pseudo) return;
@@ -1094,17 +1170,27 @@ export async function addCoAdmin(tournamentId: string, formData: FormData) {
 
   if (!profile) return;
 
-  await supabase.from("tournament_admins").insert({
+  const { error } = await supabase.from("tournament_admins").insert({
     tournament_id: tournamentId,
     user_id: profile.id,
-    added_by: user.id,
+    added_by: access.userId,
   });
+
+  if (error) {
+    const message =
+      error.code === "23505"
+        ? "Ce joueur est déjà co-administrateur."
+        : error.message;
+    redirect(`/tournois/${tournamentId}?erreur=${encodeURIComponent(message)}`);
+  }
 
   revalidatePath(`/tournois/${tournamentId}`);
 }
 
 export async function removeCoAdmin(tournamentId: string, userId: string) {
   const supabase = await createClient();
+  const access = await getManageAccess(supabase, tournamentId);
+  if (!access?.isOwner) return;
 
   await supabase
     .from("tournament_admins")

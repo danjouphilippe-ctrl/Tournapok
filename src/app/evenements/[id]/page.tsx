@@ -26,10 +26,13 @@ function getPseudo(row: { profiles: { pseudo: string }[] | { pseudo: string } | 
 
 export default async function EvenementPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ erreur?: string }>;
 }) {
   const { id } = await params;
+  const { erreur } = await searchParams;
   const supabase = await createClient();
   const {
     data: { user },
@@ -68,6 +71,11 @@ export default async function EvenementPage({
 
   return (
     <main className="page">
+      {erreur && (
+        <p className="card text-sm text-danger" role="alert">
+          {erreur}
+        </p>
+      )}
       <div className="flex flex-col gap-2">
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-center gap-3">

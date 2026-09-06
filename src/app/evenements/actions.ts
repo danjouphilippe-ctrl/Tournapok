@@ -20,6 +20,38 @@ type EventRowInput = {
 
 type ParsedEventFields = { ok: false; error: string } | { ok: true; row: EventRowInput };
 
+/** Vérifie que l'utilisateur connecté est l'organisateur ou un
+ * co-administrateur de l'évènement (même logique que pour les
+ * tournois : ne remplace pas les policies RLS, mais évite qu'une
+ * action échoue en silence quand elles bloquent la mise à jour). */
+async function getEventAccess(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  eventId: string,
+): Promise<{ userId: string; isOwner: boolean } | null> {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return null;
+
+  const { data: event } = await supabase
+    .from("events")
+    .select("created_by")
+    .eq("id", eventId)
+    .single();
+  if (!event) return null;
+  if (event.created_by === user.id) return { userId: user.id, isOwner: true };
+
+  const { data: admin } = await supabase
+    .from("event_admins")
+    .select("user_id")
+    .eq("event_id", eventId)
+    .eq("user_id", user.id)
+    .maybeSingle();
+  if (!admin) return null;
+
+  return { userId: user.id, isOwner: false };
+}
+
 function parseEventFields(formData: FormData): ParsedEventFields {
   const name = String(formData.get("name") ?? "").trim();
   const description = String(formData.get("description") ?? "").trim();
@@ -88,10 +120,9 @@ export async function updateEvent(
   formData: FormData,
 ): Promise<EventFormState> {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) redirect("/connexion");
+  if (!(await getEventAccess(supabase, eventId))) {
+    return { error: "Tu n'as pas les droits pour modifier cet évènement." };
+  }
 
   const parsed = parseEventFields(formData);
   if (!parsed.ok) return { error: parsed.error };
@@ -129,10 +160,8 @@ export async function deleteEvent(eventId: string) {
 
 export async function addEventCoAdmin(eventId: string, formData: FormData) {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) redirect("/connexion");
+  const access = await getEventAccess(supabase, eventId);
+  if (!access?.isOwner) return;
 
   const pseudo = String(formData.get("pseudo") ?? "").trim();
   if (!pseudo) return;
@@ -145,17 +174,27 @@ export async function addEventCoAdmin(eventId: string, formData: FormData) {
 
   if (!profile) return;
 
-  await supabase.from("event_admins").insert({
+  const { error } = await supabase.from("event_admins").insert({
     event_id: eventId,
     user_id: profile.id,
-    added_by: user.id,
+    added_by: access.userId,
   });
+
+  if (error) {
+    const message =
+      error.code === "23505"
+        ? "Ce joueur est déjà co-administrateur."
+        : error.message;
+    redirect(`/evenements/${eventId}?erreur=${encodeURIComponent(message)}`);
+  }
 
   revalidatePath(`/evenements/${eventId}`);
 }
 
 export async function removeEventCoAdmin(eventId: string, userId: string) {
   const supabase = await createClient();
+  const access = await getEventAccess(supabase, eventId);
+  if (!access?.isOwner) return;
 
   await supabase.from("event_admins").delete().eq("event_id", eventId).eq("user_id", userId);
 
