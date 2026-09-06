@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { parseEventFields } from "./actions";
+import { parseEventFields } from "./validation";
 
 function validFormData(overrides: Record<string, string | undefined> = {}): FormData {
   const base: Record<string, string> = {

@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { assertCanUseClub, getResourceAccess, type ResourceAccess } from "@/lib/resourceAccess";
+import { parseEventFields } from "./validation";
 
 export type EventFormState = {
   error: string | null;
@@ -36,51 +37,6 @@ function getEventAccess(
     adminResourceColumn: "event_id",
     clubColumn: "club_id",
   });
-}
-
-export function parseEventFields(formData: FormData): ParsedEventFields {
-  const name = String(formData.get("name") ?? "").trim();
-  const description = String(formData.get("description") ?? "").trim();
-  const scheduledAt = String(formData.get("scheduled_at") ?? "").trim();
-  const location = String(formData.get("location") ?? "").trim();
-  const logoUrl = String(formData.get("logo_url") ?? "").trim();
-  const organisation = String(formData.get("organisation") ?? "").trim();
-  const maxPlayersRaw = formData.get("max_players");
-  const maxPlayers =
-    maxPlayersRaw === null || maxPlayersRaw === "" ? null : Number(maxPlayersRaw);
-  const clubId = String(formData.get("club_id") ?? "").trim() || null;
-  const visibility = String(formData.get("visibility") ?? "private");
-
-  if (!name) {
-    return { ok: false, error: "L'évènement doit avoir un nom." };
-  }
-  if (!scheduledAt) {
-    return { ok: false, error: "La date et l'heure sont obligatoires." };
-  }
-  if (!location) {
-    return { ok: false, error: "Le lieu est obligatoire." };
-  }
-  if (!["public", "club", "private"].includes(visibility)) {
-    return { ok: false, error: "Visibilité invalide." };
-  }
-  if (visibility === "club" && !clubId) {
-    return { ok: false, error: "Choisis un club pour une visibilité réservée au club." };
-  }
-
-  return {
-    ok: true,
-    row: {
-      name,
-      description: description || null,
-      scheduled_at: scheduledAt,
-      location,
-      logo_url: logoUrl || null,
-      organisation: organisation || null,
-      max_players: maxPlayers !== null && Number.isFinite(maxPlayers) ? maxPlayers : null,
-      club_id: clubId,
-      visibility,
-    },
-  };
 }
 
 export async function createEvent(

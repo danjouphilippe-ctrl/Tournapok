@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { parseClubFields } from "./actions";
+import { parseClubFields } from "./validation";
 
 function formData(fields: Record<string, string | undefined>): FormData {
   const fd = new FormData();

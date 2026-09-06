@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { parseTournamentFields } from "./actions";
+import { parseTournamentFields } from "./validation";
 
 /** Construit un FormData valide minimal, avec la possibilité de
  * surcharger ou de retirer des champs pour chaque cas de test. */

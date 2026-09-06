@@ -6,17 +6,11 @@ import { createClient } from "@/lib/supabase/server";
 import type { StructureLevelInput } from "@/app/structures/actions";
 import { initialSeating, rebalanceAfterRemoval, seatNewPlayer, type SeatedPlayer } from "@/lib/tableBalancing";
 import { assertCanUseClub, getResourceAccess, type ResourceAccess } from "@/lib/resourceAccess";
+import { parseTournamentFields } from "./validation";
 
 export type TournamentFormState = {
   error: string | null;
 };
-
-function numberOrNull(formData: FormData, key: string): number | null {
-  const raw = formData.get(key);
-  if (raw === null || raw === "") return null;
-  const value = Number(raw);
-  return Number.isFinite(value) ? value : null;
-}
 
 export type TournamentRowInput = {
   name: string;
@@ -62,159 +56,6 @@ export type ParsedTournamentFields =
       customLevels: StructureLevelInput[];
       payouts: PayoutInput[];
     };
-
-export function parseTournamentFields(formData: FormData): ParsedTournamentFields {
-  const name = String(formData.get("name") ?? "").trim();
-  const description = String(formData.get("description") ?? "").trim();
-  const scheduledAt = String(formData.get("scheduled_at") ?? "").trim();
-  const location = String(formData.get("location") ?? "").trim();
-  const buyIn = Number(formData.get("buy_in") ?? 0);
-  const startingStack = Number(formData.get("starting_stack") ?? 10000);
-  const minPlayers = Number(formData.get("min_players") ?? 2);
-  const maxPlayers = numberOrNull(formData, "max_players");
-  const tableSize = Number(formData.get("table_size") ?? 9);
-
-  const rebuyEnabled = formData.get("rebuy_enabled") === "on";
-  const rebuyMaxPerPlayer = numberOrNull(formData, "rebuy_max_per_player");
-  const rebuyPrice = numberOrNull(formData, "rebuy_price");
-  const rebuyChips = numberOrNull(formData, "rebuy_chips");
-  const rebuyStackThreshold = numberOrNull(formData, "rebuy_stack_threshold");
-  const rebuyUntilLevel = numberOrNull(formData, "rebuy_until_level");
-
-  const addonEnabled = formData.get("addon_enabled") === "on";
-  const addonPrice = numberOrNull(formData, "addon_price");
-  const addonChips = numberOrNull(formData, "addon_chips");
-  const addonAtLevel = numberOrNull(formData, "addon_at_level");
-
-  const bountyEnabled = formData.get("bounty_enabled") === "on";
-  const bountyAmount = numberOrNull(formData, "bounty_amount");
-  const bountyProgressive = formData.get("bounty_progressive") === "on";
-
-  const lateRegEnabled = formData.get("late_registration_enabled") === "on";
-  const lateRegUntilLevel = numberOrNull(formData, "late_registration_until_level");
-
-  const guaranteeAmount = numberOrNull(formData, "guarantee_amount");
-  const payoutsRaw = String(formData.get("payouts_json") ?? "[]");
-
-  const blindStructureId = String(formData.get("blind_structure_id") ?? "") || null;
-  const customLevelsRaw = String(formData.get("custom_levels_json") ?? "[]");
-  const chipImageUrl = String(formData.get("chip_image_url") ?? "").trim() || null;
-  const clubId = String(formData.get("club_id") ?? "").trim() || null;
-  const visibility = String(formData.get("visibility") ?? "private");
-
-  if (!name) {
-    return { ok: false, error: "Le tournoi doit avoir un nom." };
-  }
-  if (!Number.isFinite(buyIn) || buyIn < 0) {
-    return { ok: false, error: "Le buy-in doit être un nombre positif." };
-  }
-  if (!Number.isFinite(startingStack) || startingStack <= 0) {
-    return { ok: false, error: "Le tapis de départ doit être un nombre positif." };
-  }
-  if (!Number.isFinite(tableSize) || tableSize < 2) {
-    return { ok: false, error: "Le nombre de joueurs par table doit être d'au moins 2." };
-  }
-  if (!Number.isFinite(minPlayers) || minPlayers < 1) {
-    return { ok: false, error: "Le nombre minimum de joueurs doit être d'au moins 1." };
-  }
-  if (maxPlayers !== null && maxPlayers < minPlayers) {
-    return {
-      ok: false,
-      error: "Le nombre maximum de joueurs ne peut pas être inférieur au minimum.",
-    };
-  }
-  if (!["public", "club", "private"].includes(visibility)) {
-    return { ok: false, error: "Visibilité invalide." };
-  }
-  if (visibility === "club" && !clubId) {
-    return { ok: false, error: "Choisis un club pour une visibilité réservée au club." };
-  }
-  if (rebuyEnabled && (!rebuyPrice || !rebuyChips)) {
-    return { ok: false, error: "Renseigne le prix et les jetons de la recave." };
-  }
-  if (addonEnabled && (!addonPrice || !addonChips)) {
-    return { ok: false, error: "Renseigne le prix et les jetons de l'add-on." };
-  }
-  if (bountyEnabled && !bountyAmount) {
-    return { ok: false, error: "Renseigne le montant de la prime." };
-  }
-
-  let customLevels: StructureLevelInput[] = [];
-  if (!blindStructureId) {
-    try {
-      customLevels = JSON.parse(customLevelsRaw);
-    } catch {
-      return { ok: false, error: "La structure de blindes personnalisée est invalide." };
-    }
-    if (!Array.isArray(customLevels) || customLevels.length === 0) {
-      return { ok: false, error: "Choisis une structure de blindes ou définis des niveaux." };
-    }
-  }
-
-  let payouts: PayoutInput[] = [];
-  try {
-    payouts = JSON.parse(payoutsRaw);
-  } catch {
-    return { ok: false, error: "La répartition des gains est invalide." };
-  }
-  if (!Array.isArray(payouts)) payouts = [];
-  if (payouts.length > 0) {
-    if (payouts.some((p) => p.percentage < 0)) {
-      return { ok: false, error: "Un pourcentage de gain ne peut pas être négatif." };
-    }
-    const places = payouts.map((p) => p.place);
-    if (new Set(places).size !== places.length) {
-      return { ok: false, error: "Chaque place ne peut apparaître qu'une seule fois." };
-    }
-    const total = payouts.reduce((sum, p) => sum + p.percentage, 0);
-    if (Math.abs(total - 100) > 0.5) {
-      return {
-        ok: false,
-        error: `La répartition des gains doit totaliser 100 % (actuellement ${total.toFixed(1)} %).`,
-      };
-    }
-  }
-
-  return {
-    ok: true,
-    payouts,
-    row: {
-      name,
-      description: description || null,
-      scheduled_at: scheduledAt || null,
-      location: location || null,
-      buy_in: buyIn,
-      starting_stack: startingStack,
-      min_players: minPlayers,
-      max_players: maxPlayers,
-      table_size: tableSize,
-      rebuy_enabled: rebuyEnabled,
-      rebuy_max_per_player: rebuyEnabled ? rebuyMaxPerPlayer : null,
-      rebuy_price: rebuyEnabled ? rebuyPrice : null,
-      rebuy_chips: rebuyEnabled ? rebuyChips : null,
-      rebuy_stack_threshold: rebuyEnabled ? rebuyStackThreshold : null,
-      rebuy_until_level: rebuyEnabled ? rebuyUntilLevel : null,
-      addon_enabled: addonEnabled,
-      addon_price: addonEnabled ? addonPrice : null,
-      addon_chips: addonEnabled ? addonChips : null,
-      addon_at_level: addonEnabled ? addonAtLevel : null,
-      bounty_enabled: bountyEnabled,
-      bounty_amount: bountyEnabled ? bountyAmount : null,
-      bounty_progressive: bountyEnabled ? bountyProgressive : false,
-      late_registration_enabled: lateRegEnabled,
-      late_registration_until_level: lateRegEnabled ? lateRegUntilLevel : null,
-      guarantee_amount: guaranteeAmount,
-      payout_places: payouts.length > 0 ? payouts.length : null,
-      blind_structure_id: blindStructureId,
-      chip_image_url: chipImageUrl,
-      club_id: clubId,
-      visibility,
-    },
-    blindStructureId,
-    customLevels,
-  };
-}
-
 
 async function applyBlindLevels(
   supabase: Awaited<ReturnType<typeof createClient>>,
@@ -614,7 +455,7 @@ async function getMaxLevel(
 
 /** Vérifie que l'utilisateur connecté est l'organisateur ou un
  * co-administrateur du tournoi (voir getResourceAccess). */
-function getManageAccess(
+export async function getManageAccess(
   supabase: Awaited<ReturnType<typeof createClient>>,
   tournamentId: string,
 ): Promise<ResourceAccess> {
@@ -673,7 +514,11 @@ async function seatLateJoiner(
   if (mine) await writeSeating(supabase, tournamentId, [mine]);
 }
 
-export async function startTournament(tournamentId: string) {
+/** Étape 1 du démarrage : vérifie que tous les joueurs inscrits ont
+ * payé leur buy-in, tire les tables, puis renvoie l'organisateur vers
+ * l'écran des tables pour qu'il confirme le placement avant de
+ * réellement démarrer l'horloge (voir startTournament). */
+export async function prepareTournamentSeating(tournamentId: string) {
   const supabase = await createClient();
   if (!(await getManageAccess(supabase, tournamentId))) return;
 
@@ -687,11 +532,34 @@ export async function startTournament(tournamentId: string) {
 
   const { data: players } = await supabase
     .from("tournament_players")
-    .select("player_id")
+    .select("player_id, buy_in_paid")
     .eq("tournament_id", tournamentId)
     .eq("status", "inscrit");
 
   if (!players || players.length < tournament.min_players) return;
+  if (players.some((p) => !p.buy_in_paid)) return;
+
+  const seats = initialSeating(players.map((p) => p.player_id), tournament.table_size);
+  await writeSeating(supabase, tournamentId, seats);
+
+  revalidatePath(`/tournois/${tournamentId}`);
+  redirect(`/tournois/${tournamentId}/tables`);
+}
+
+/** Étape 2 du démarrage : les tables sont déjà tirées (voir
+ * prepareTournamentSeating) — il ne reste plus qu'à démarrer
+ * l'horloge, une fois que l'organisateur a confirmé le placement. */
+export async function startTournament(tournamentId: string) {
+  const supabase = await createClient();
+  if (!(await getManageAccess(supabase, tournamentId))) return;
+
+  const { data: tournament } = await supabase
+    .from("tournaments")
+    .select("status")
+    .eq("id", tournamentId)
+    .single();
+
+  if (!tournament || tournament.status !== "inscription") return;
 
   const firstLevel = await getLevel(supabase, tournamentId, 1);
   const durationSeconds = (firstLevel?.duration_minutes ?? 20) * 60;
@@ -708,10 +576,8 @@ export async function startTournament(tournamentId: string) {
     })
     .eq("id", tournamentId);
 
-  const seats = initialSeating(players.map((p) => p.player_id), tournament.table_size);
-  await writeSeating(supabase, tournamentId, seats);
-
   revalidatePath(`/tournois/${tournamentId}`);
+  revalidatePath(`/tournois/${tournamentId}/tables`);
 }
 
 export async function pauseClock(tournamentId: string) {

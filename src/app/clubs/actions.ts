@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getResourceAccess, type ResourceAccess } from "@/lib/resourceAccess";
+import { parseClubFields } from "./validation";
 
 export type ClubFormState = {
   error: string | null;
@@ -20,27 +21,6 @@ export type ClubRowInput = {
 };
 
 export type ParsedClubFields = { ok: false; error: string } | { ok: true; row: ClubRowInput };
-
-export function parseClubFields(formData: FormData): ParsedClubFields {
-  const name = String(formData.get("name") ?? "").trim();
-  const description = String(formData.get("description") ?? "").trim();
-  const location = String(formData.get("location") ?? "").trim();
-  const logoUrl = String(formData.get("logo_url") ?? "").trim();
-
-  if (!name) {
-    return { ok: false, error: "Le club doit avoir un nom." };
-  }
-
-  return {
-    ok: true,
-    row: {
-      name,
-      description: description || null,
-      location: location || null,
-      logo_url: logoUrl || null,
-    },
-  };
-}
 
 /** Vérifie que l'utilisateur connecté est le propriétaire ou un
  * administrateur du club (voir getResourceAccess). */

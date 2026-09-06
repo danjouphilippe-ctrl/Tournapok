@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { getManageAccess, startTournament } from "@/app/tournois/actions";
 
 function getPseudo(p: { profiles: { pseudo: string; avatar_url: string | null }[] | { pseudo: string; avatar_url: string | null } | null }) {
   const profiles = p.profiles;
@@ -27,6 +28,8 @@ export default async function TablesPage({
     .single();
 
   if (!tournament) notFound();
+
+  const canManage = Boolean(await getManageAccess(supabase, id));
 
   const { data: players } = await supabase
     .from("tournament_players")
@@ -79,6 +82,14 @@ export default async function TablesPage({
             />
           ))}
         </div>
+      )}
+
+      {tournament.status === "inscription" && canManage && tableNumbers.length > 0 && (
+        <form action={startTournament.bind(null, tournament.id)}>
+          <button type="submit" className="btn btn-primary w-full">
+            Les joueurs sont prêts : démarrer le tournoi
+          </button>
+        </form>
       )}
     </main>
   );

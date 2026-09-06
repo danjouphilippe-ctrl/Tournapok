@@ -11,6 +11,7 @@ import {
   inviteToTournament,
   nextLevel,
   pauseClock,
+  prepareTournamentSeating,
   previousLevel,
   rebuyPlayer,
   removeCoAdmin,
@@ -18,7 +19,6 @@ import {
   respondToInvitation,
   respondToJoinRequest,
   resumeClock,
-  startTournament,
   toggleBuyInPaid,
   updateDisplayConfig,
 } from "@/app/tournois/actions";
@@ -150,6 +150,8 @@ export default async function TournoiPage({
   const finished = allPlayers
     .filter((p) => p.status !== "inscrit")
     .sort((a, b) => (a.place ?? 0) - (b.place ?? 0));
+  const enoughActivePlayers = active.length >= tournament.min_players;
+  const allActivePaid = active.length > 0 && active.every((p) => p.buy_in_paid);
 
   const currentLevel = levels.find((l) => l.level_number === tournament.current_level);
   const paidCount = allPlayers.filter((p) => p.buy_in_paid).length;
@@ -434,17 +436,22 @@ export default async function TournoiPage({
       )}
 
       {tournament.status === "inscription" && canManage && (
-        <form action={startTournament.bind(null, tournament.id)}>
+        <form action={prepareTournamentSeating.bind(null, tournament.id)}>
           <button
             type="submit"
-            disabled={allPlayers.length < tournament.min_players}
+            disabled={!enoughActivePlayers || !allActivePaid}
             className="btn btn-secondary w-full"
           >
             Démarrer le tournoi
           </button>
-          {allPlayers.length < tournament.min_players && (
+          {!enoughActivePlayers && (
             <p className="mt-1 text-xs text-ink-faint">
               Il faut au moins {tournament.min_players} joueurs inscrits.
+            </p>
+          )}
+          {enoughActivePlayers && !allActivePaid && (
+            <p className="mt-1 text-xs text-ink-faint">
+              Tous les buy-ins doivent être payés avant de démarrer.
             </p>
           )}
         </form>
