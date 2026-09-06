@@ -49,8 +49,8 @@ export default async function JoueurPage({
             {profile.pseudo.slice(0, 1).toUpperCase()}
           </div>
         )}
-        <div className="flex flex-col gap-2">
-          <h1 className="text-2xl font-semibold">{profile.pseudo}</h1>
+        <div className="flex min-w-0 flex-1 flex-col gap-2">
+          <h1 className="wrap-anywhere text-2xl font-semibold">{profile.pseudo}</h1>
           {(profile.city || profile.age) && (
             <div className="flex flex-wrap gap-2">
               {profile.city && <span className="chip">📍 {profile.city}</span>}

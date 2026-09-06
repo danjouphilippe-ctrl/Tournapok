@@ -69,9 +69,9 @@ export default async function StructureDetailPage({
       )}
 
       <div className="hero-card flex flex-col gap-3">
-        <h1 className="text-2xl font-semibold">{structure.name}</h1>
+        <h1 className="wrap-anywhere text-2xl font-semibold">{structure.name}</h1>
         {structure.description && (
-          <p className="text-sm text-ink-soft">
+          <p className="wrap-anywhere text-sm text-ink-soft">
             <FormattedText text={structure.description} />
           </p>
         )}

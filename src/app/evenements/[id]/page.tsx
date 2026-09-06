@@ -78,7 +78,7 @@ export default async function EvenementPage({
         </p>
       )}
       <div className="hero-card flex flex-col gap-3">
-        <div className="flex items-center gap-3">
+        <div className="flex min-w-0 items-center gap-3">
           {event.logo_url && (
             // eslint-disable-next-line @next/next/no-img-element
             <img
@@ -87,7 +87,7 @@ export default async function EvenementPage({
               className="h-16 w-28 shrink-0 rounded-lg border border-line object-cover"
             />
           )}
-          <h1 className="text-2xl font-semibold">{event.name}</h1>
+          <h1 className="min-w-0 wrap-anywhere text-2xl font-semibold">{event.name}</h1>
         </div>
         {event.description && (
           <p className="text-sm text-ink-soft">

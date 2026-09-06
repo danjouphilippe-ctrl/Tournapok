@@ -114,10 +114,10 @@ export default async function ClubPage({
             style={{ borderColor: "var(--gold-line)" }}
           />
         ) : null}
-        <div className="flex flex-col gap-3">
-          <h1 className="text-2xl font-semibold">{club.name}</h1>
+        <div className="flex min-w-0 flex-1 flex-col gap-3">
+          <h1 className="wrap-anywhere text-2xl font-semibold">{club.name}</h1>
           {club.description && (
-            <p className="text-sm text-ink-soft">
+            <p className="wrap-anywhere text-sm text-ink-soft">
               <FormattedText text={club.description} />
             </p>
           )}

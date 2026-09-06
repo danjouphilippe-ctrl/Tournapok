@@ -230,7 +230,7 @@ export default async function TournoiPage({
 
       <div className="hero-card flex flex-col gap-3">
         <div className="flex flex-wrap items-start justify-between gap-3">
-          <div className="flex items-center gap-3">
+          <div className="flex min-w-0 items-center gap-3">
             {tournament.chip_image_url && (
               // eslint-disable-next-line @next/next/no-img-element
               <img
@@ -240,7 +240,7 @@ export default async function TournoiPage({
                 style={{ borderColor: "var(--gold-line)" }}
               />
             )}
-            <h1 className="text-2xl font-semibold">{tournament.name}</h1>
+            <h1 className="min-w-0 wrap-anywhere text-2xl font-semibold">{tournament.name}</h1>
           </div>
           <StatutBadge status={tournament.status} />
         </div>

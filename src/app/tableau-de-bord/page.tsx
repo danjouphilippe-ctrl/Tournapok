@@ -55,9 +55,9 @@ export default async function TableauDeBordPage() {
             {(profile?.pseudo ?? user.email ?? "?").slice(0, 1).toUpperCase()}
           </div>
         )}
-        <div>
-          <h1 className="text-xl font-semibold">Salut {profile?.pseudo ?? user.email}</h1>
-          <p className="text-sm text-ink-soft">{user.email}</p>
+        <div className="min-w-0 flex-1">
+          <h1 className="text-xl font-semibold wrap-anywhere">Salut {profile?.pseudo ?? user.email}</h1>
+          <p className="text-sm text-ink-soft wrap-anywhere">{user.email}</p>
         </div>
       </div>
 
