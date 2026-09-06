@@ -48,7 +48,13 @@ export default async function TournoisPage() {
       </div>
 
       {!tournaments || tournaments.length === 0 ? (
-        <p className="text-sm text-ink-soft">Aucun tournoi pour l&apos;instant.</p>
+        <div className="card flex flex-col items-center gap-3 py-14 text-center">
+          <span className="tile-icon tile-icon-gold text-2xl">♠</span>
+          <p className="text-sm text-ink-soft">Aucun tournoi pour l&apos;instant.</p>
+          <Link href="/tournois/nouveau" className="btn btn-primary btn-sm">
+            Créer le premier tournoi
+          </Link>
+        </div>
       ) : (
         <ul className="flex flex-col gap-3">
           {tournaments.map((t) => (

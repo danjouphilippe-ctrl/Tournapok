@@ -42,7 +42,13 @@ export default async function EvenementsPage() {
       </div>
 
       {!events || events.length === 0 ? (
-        <p className="text-sm text-ink-soft">Aucun évènement pour l&apos;instant.</p>
+        <div className="card flex flex-col items-center gap-3 py-14 text-center">
+          <span className="tile-icon tile-icon-accent text-2xl">📅</span>
+          <p className="text-sm text-ink-soft">Aucun évènement pour l&apos;instant.</p>
+          <Link href="/evenements/nouveau" className="btn btn-primary btn-sm">
+            Créer le premier évènement
+          </Link>
+        </div>
       ) : (
         <ul className="flex flex-col gap-3">
           {events.map((e) => {

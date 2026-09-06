@@ -66,9 +66,17 @@ export default async function ClubsPage({
       </form>
 
       {!clubs || clubs.length === 0 ? (
-        <p className="text-sm text-ink-soft">
-          {term ? "Aucun club ne correspond à cette recherche." : "Aucun club pour l'instant."}
-        </p>
+        <div className="card flex flex-col items-center gap-3 py-14 text-center">
+          <span className="tile-icon tile-icon-teal text-2xl">🏛</span>
+          <p className="text-sm text-ink-soft">
+            {term ? "Aucun club ne correspond à cette recherche." : "Aucun club pour l'instant."}
+          </p>
+          {!term && (
+            <Link href="/clubs/nouveau" className="btn btn-primary btn-sm">
+              Créer le premier club
+            </Link>
+          )}
+        </div>
       ) : (
         <ul className="flex flex-col gap-3">
           {clubs.map((c) => {

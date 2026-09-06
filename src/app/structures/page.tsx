@@ -46,7 +46,13 @@ export default async function StructuresPage() {
       </div>
 
       {!structures || structures.length === 0 ? (
-        <p className="text-sm text-ink-soft">Aucune structure pour l&apos;instant.</p>
+        <div className="card flex flex-col items-center gap-3 py-14 text-center">
+          <span className="tile-icon tile-icon-slate text-2xl">⏱</span>
+          <p className="text-sm text-ink-soft">Aucune structure pour l&apos;instant.</p>
+          <Link href="/structures/nouvelle" className="btn btn-primary btn-sm">
+            Créer la première structure
+          </Link>
+        </div>
       ) : (
         <ul className="flex flex-col gap-3">
           {structures.map((s) => {

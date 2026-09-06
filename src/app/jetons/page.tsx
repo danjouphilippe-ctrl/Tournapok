@@ -33,7 +33,13 @@ export default async function JetonsPage() {
       </div>
 
       {!chipSets || chipSets.length === 0 ? (
-        <p className="text-sm text-ink-soft">Aucun jeu de jetons pour l&apos;instant.</p>
+        <div className="card flex flex-col items-center gap-3 py-14 text-center">
+          <span className="tile-icon tile-icon-gold text-2xl">🎰</span>
+          <p className="text-sm text-ink-soft">Aucun jeu de jetons pour l&apos;instant.</p>
+          <Link href="/jetons/nouveau" className="btn btn-primary btn-sm">
+            Créer le premier jeu de jetons
+          </Link>
+        </div>
       ) : (
         <ul className="flex flex-col gap-3">
           {chipSets.map((s) => {
