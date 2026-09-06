@@ -18,7 +18,7 @@ function numberOrNull(formData: FormData, key: string): number | null {
   return Number.isFinite(value) ? value : null;
 }
 
-type TournamentRowInput = {
+export type TournamentRowInput = {
   name: string;
   description: string | null;
   scheduled_at: string | null;
@@ -53,7 +53,7 @@ type TournamentRowInput = {
 
 export type PayoutInput = { place: number; percentage: number };
 
-type ParsedTournamentFields =
+export type ParsedTournamentFields =
   | { ok: false; error: string }
   | {
       ok: true;
@@ -63,7 +63,7 @@ type ParsedTournamentFields =
       payouts: PayoutInput[];
     };
 
-function parseTournamentFields(formData: FormData): ParsedTournamentFields {
+export function parseTournamentFields(formData: FormData): ParsedTournamentFields {
   const name = String(formData.get("name") ?? "").trim();
   const description = String(formData.get("description") ?? "").trim();
   const scheduledAt = String(formData.get("scheduled_at") ?? "").trim();

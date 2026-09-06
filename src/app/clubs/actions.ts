@@ -12,16 +12,16 @@ export type ClubFormState = {
 const MEMBER_ROLES = ["owner", "admin", "treasurer", "member"] as const;
 export type ClubMemberRole = (typeof MEMBER_ROLES)[number];
 
-type ClubRowInput = {
+export type ClubRowInput = {
   name: string;
   description: string | null;
   location: string | null;
   logo_url: string | null;
 };
 
-type ParsedClubFields = { ok: false; error: string } | { ok: true; row: ClubRowInput };
+export type ParsedClubFields = { ok: false; error: string } | { ok: true; row: ClubRowInput };
 
-function parseClubFields(formData: FormData): ParsedClubFields {
+export function parseClubFields(formData: FormData): ParsedClubFields {
   const name = String(formData.get("name") ?? "").trim();
   const description = String(formData.get("description") ?? "").trim();
   const location = String(formData.get("location") ?? "").trim();

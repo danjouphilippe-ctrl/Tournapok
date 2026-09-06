@@ -42,8 +42,14 @@ function firstFreeSeat(taken: Set<number>): number {
 /** Tirage initial : répartit tous les joueurs au hasard, le plus
  * équitablement possible, sur le nombre de tables nécessaire. */
 export function initialSeating(playerIds: string[], tableSize: number): SeatedPlayer[] {
+  // Filet de sécurité : une taille de table <= 0 ferait calculer un
+  // nombre de tables infini (Math.ceil(n/0) = Infinity), qui plante
+  // Array.from({length: Infinity}). Ce cas est déjà bloqué en amont
+  // par la validation du formulaire, mais la fonction ne doit jamais
+  // planter même appelée directement avec une valeur invalide.
+  const safeTableSize = Math.max(1, tableSize);
   const shuffled = shuffle(playerIds);
-  const tableCount = Math.max(1, Math.ceil(shuffled.length / tableSize));
+  const tableCount = Math.max(1, Math.ceil(shuffled.length / safeTableSize));
   const tables: string[][] = Array.from({ length: tableCount }, () => []);
   shuffled.forEach((id, i) => tables[i % tableCount].push(id));
 

@@ -9,7 +9,7 @@ export type EventFormState = {
   error: string | null;
 };
 
-type EventRowInput = {
+export type EventRowInput = {
   name: string;
   description: string | null;
   scheduled_at: string;
@@ -21,7 +21,7 @@ type EventRowInput = {
   visibility: string;
 };
 
-type ParsedEventFields = { ok: false; error: string } | { ok: true; row: EventRowInput };
+export type ParsedEventFields = { ok: false; error: string } | { ok: true; row: EventRowInput };
 
 /** Vérifie que l'utilisateur connecté est l'organisateur ou un
  * co-administrateur de l'évènement (voir getResourceAccess). */
@@ -38,7 +38,7 @@ function getEventAccess(
   });
 }
 
-function parseEventFields(formData: FormData): ParsedEventFields {
+export function parseEventFields(formData: FormData): ParsedEventFields {
   const name = String(formData.get("name") ?? "").trim();
   const description = String(formData.get("description") ?? "").trim();
   const scheduledAt = String(formData.get("scheduled_at") ?? "").trim();
