@@ -34,6 +34,7 @@ function getEventAccess(
     ownerColumn: "created_by",
     adminTable: "event_admins",
     adminResourceColumn: "event_id",
+    clubColumn: "club_id",
   });
 }
 

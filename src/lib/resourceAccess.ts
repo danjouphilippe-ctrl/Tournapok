@@ -16,6 +16,10 @@ type ResourceAccessConfig = {
    * ligne de adminTable est considérée comme un droit de gestion. */
   adminRoleColumn?: string;
   adminRoleValues?: string[];
+  /** Colonne de resourceTable qui référence un club (ex: "club_id").
+   * Si renseignée, un owner/admin du club a aussi les droits de
+   * gestion sur la ressource, même sans ligne dans adminTable. */
+  clubColumn?: string;
 };
 
 /** Vérifie que l'utilisateur connecté est le propriétaire ou un
@@ -35,13 +39,18 @@ export async function getResourceAccess(
   } = await supabase.auth.getUser();
   if (!user) return null;
 
+  const selectColumns = config.clubColumn
+    ? `${config.ownerColumn}, ${config.clubColumn}`
+    : config.ownerColumn;
+
   const { data: resource } = await supabase
     .from(config.resourceTable)
-    .select(config.ownerColumn)
+    .select(selectColumns)
     .eq("id", resourceId)
     .single();
   if (!resource) return null;
-  if ((resource as unknown as Record<string, string>)[config.ownerColumn] === user.id) {
+  const row = resource as unknown as Record<string, string | null>;
+  if (row[config.ownerColumn] === user.id) {
     return { userId: user.id, isOwner: true };
   }
 
@@ -54,9 +63,24 @@ export async function getResourceAccess(
     adminQuery = adminQuery.in(config.adminRoleColumn, config.adminRoleValues);
   }
   const { data: admin } = await adminQuery.maybeSingle();
-  if (!admin) return null;
+  if (admin) return { userId: user.id, isOwner: false };
 
-  return { userId: user.id, isOwner: false };
+  if (config.clubColumn) {
+    const clubId = row[config.clubColumn];
+    if (clubId) {
+      const { data: clubMember } = await supabase
+        .from("club_members")
+        .select("role")
+        .eq("club_id", clubId)
+        .eq("user_id", user.id)
+        .maybeSingle();
+      if (clubMember && (clubMember.role === "owner" || clubMember.role === "admin")) {
+        return { userId: user.id, isOwner: false };
+      }
+    }
+  }
+
+  return null;
 }
 
 /** Vérifie qu'un club_id choisi dans un formulaire (tournoi ou

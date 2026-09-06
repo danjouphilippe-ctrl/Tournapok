@@ -623,6 +623,7 @@ function getManageAccess(
     ownerColumn: "created_by",
     adminTable: "tournament_admins",
     adminResourceColumn: "tournament_id",
+    clubColumn: "club_id",
   });
 }
 
