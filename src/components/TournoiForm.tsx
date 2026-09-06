@@ -235,7 +235,6 @@ export function TournoiForm({
                 setClubId(e.target.value);
                 if (!e.target.value && visibility === "club") setVisibility("private");
               }}
-              name="club_id"
               className="input"
             >
               <option value="">— Aucun club —</option>
@@ -246,9 +245,9 @@ export function TournoiForm({
               ))}
             </select>
           </Field>
+          <input type="hidden" name="club_id" value={clubId} />
           <Field label="Visibilité">
             <select
-              name="visibility"
               value={visibility}
               onChange={(e) => setVisibility(e.target.value)}
               className="input"
@@ -260,6 +259,7 @@ export function TournoiForm({
               <option value="public">Public — visible par tous les joueurs connectés</option>
             </select>
           </Field>
+          <input type="hidden" name="visibility" value={visibility} />
         </Section>
 
         <Section title="Buy-in & tapis de départ">
