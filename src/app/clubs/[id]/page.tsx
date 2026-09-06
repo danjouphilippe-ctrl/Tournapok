@@ -103,24 +103,26 @@ export default async function ClubPage({
         />
       ) : null}
 
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+      <div className="hero-card flex flex-col gap-3 sm:flex-row sm:items-center">
         {club.logo_url ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={club.logo_url}
             alt=""
-            className="h-20 w-20 shrink-0 rounded-full border border-line object-cover"
+            className="h-20 w-20 shrink-0 rounded-full border-2 object-cover"
+            style={{ borderColor: "var(--gold-line)" }}
           />
         ) : null}
-        <div className="flex flex-col gap-1">
+        <div className="flex flex-col gap-3">
           <h1 className="text-2xl font-semibold">{club.name}</h1>
-          <p className="text-sm text-ink-soft">
-            Créé par {organizer?.pseudo ?? "—"}
-            {club.location && ` · 📍 ${club.location}`}
-            {" · "}
-            {club.visibility === "public" ? "Club public" : "Club privé"}
-          </p>
           {club.description && <p className="text-sm text-ink-soft">{club.description}</p>}
+          <div className="flex flex-wrap gap-2">
+            <span className="chip">👤 Créé par {organizer?.pseudo ?? "—"}</span>
+            {club.location && <span className="chip">📍 {club.location}</span>}
+            <span className="chip">
+              {club.visibility === "public" ? "🌐 Club public" : "🔒 Club privé"}
+            </span>
+          </div>
         </div>
       </div>
 
@@ -208,19 +210,22 @@ export default async function ClubPage({
       )}
 
       {canManage && pendingRequests.length > 0 && (
-        <div className="card flex flex-col gap-2">
-          <h2 className="font-semibold">Demandes d&apos;adhésion en attente</h2>
+        <div className="card section-manage flex flex-col gap-2">
+          <p className="section-eyebrow">
+            <span className="dot" />
+            Demandes d&apos;adhésion en attente
+          </p>
           {pendingRequests.map((r) => (
             <div key={r.id} className="flex items-center justify-between text-sm">
               <span>{getPseudo(r)}</span>
               <div className="flex gap-2">
                 <form action={respondToClubJoinRequest.bind(null, r.id, true)}>
-                  <button type="submit" className="link">
+                  <button type="submit" className="pill-btn pill-approve">
                     Approuver
                   </button>
                 </form>
                 <form action={respondToClubJoinRequest.bind(null, r.id, false)}>
-                  <button type="submit" className="link-danger">
+                  <button type="submit" className="pill-btn pill-reject">
                     Refuser
                   </button>
                 </form>

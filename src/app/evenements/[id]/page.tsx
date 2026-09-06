@@ -76,41 +76,47 @@ export default async function EvenementPage({
           {erreur}
         </p>
       )}
-      <div className="flex flex-col gap-2">
-        <div className="flex items-start justify-between gap-3">
-          <div className="flex items-center gap-3">
-            {event.logo_url && (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={event.logo_url}
-                alt=""
-                className="h-16 w-28 shrink-0 rounded-lg border border-line object-cover"
-              />
-            )}
-            <h1 className="text-2xl font-semibold">{event.name}</h1>
-          </div>
+      <div className="hero-card flex flex-col gap-3">
+        <div className="flex items-center gap-3">
+          {event.logo_url && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={event.logo_url}
+              alt=""
+              className="h-16 w-28 shrink-0 rounded-lg border border-line object-cover"
+            />
+          )}
+          <h1 className="text-2xl font-semibold">{event.name}</h1>
         </div>
         {event.description && <p className="text-sm text-ink-soft">{event.description}</p>}
-        <p className="text-sm text-ink-soft">
-          Créé par {organizer?.pseudo ?? "—"}
-          {event.scheduled_at &&
-            ` · ${new Date(event.scheduled_at).toLocaleString("fr-FR", { timeZone: "Europe/Paris" })}`}
-        </p>
+
+        <div className="flex flex-wrap gap-2">
+          <span className="chip">👤 Organisé par {organizer?.pseudo ?? "—"}</span>
+          {event.scheduled_at && (
+            <span className="chip chip-date">
+              📅{" "}
+              {new Date(event.scheduled_at).toLocaleString("fr-FR", {
+                timeZone: "Europe/Paris",
+                dateStyle: "long",
+                timeStyle: "short",
+              })}
+            </span>
+          )}
+          {event.max_players && <span className="chip">👥 Max {event.max_players} joueurs</span>}
+        </div>
+
         {event.location && (
-          <p className="text-sm text-ink-soft">
-            📍 {event.location}{" "}
+          <div className="flex flex-wrap items-center justify-between gap-2 border-t border-line pt-3">
+            <span className="flex items-center gap-2 text-sm text-ink-soft">📍 {event.location}</span>
             <a
               href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(event.location)}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="link"
+              className="ext-link"
             >
               Voir sur Google Maps ↗
             </a>
-          </p>
-        )}
-        {event.max_players && (
-          <p className="text-sm text-ink-soft">Max {event.max_players} joueurs</p>
+          </div>
         )}
       </div>
 

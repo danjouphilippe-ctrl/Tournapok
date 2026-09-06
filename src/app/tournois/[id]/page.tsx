@@ -219,15 +219,16 @@ export default async function TournoiPage({
         </p>
       )}
 
-      <div className="flex flex-col gap-2">
-        <div className="flex items-start justify-between gap-3">
+      <div className="hero-card flex flex-col gap-3">
+        <div className="flex flex-wrap items-start justify-between gap-3">
           <div className="flex items-center gap-3">
             {tournament.chip_image_url && (
               // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={tournament.chip_image_url}
                 alt=""
-                className="h-14 w-14 shrink-0 rounded-full border border-line object-cover"
+                className="h-14 w-14 shrink-0 rounded-full border-2 object-cover"
+                style={{ borderColor: "var(--gold-line)" }}
               />
             )}
             <h1 className="text-2xl font-semibold">{tournament.name}</h1>
@@ -235,61 +236,87 @@ export default async function TournoiPage({
           <StatutBadge status={tournament.status} />
         </div>
         {parentEvent && (
-          <Link href={`/evenements/${parentEvent.id}`} className="link text-sm">
+          <Link href={`/evenements/${parentEvent.id}`} className="link text-sm w-fit">
             ↑ Fait partie de : {parentEvent.name}
           </Link>
         )}
         {tournament.description && (
           <p className="text-sm text-ink-soft">{tournament.description}</p>
         )}
-        <p className="text-sm text-ink-soft">
-          Créé par {organizer?.pseudo ?? "—"} · Buy-in {tournament.buy_in}€ · Tapis{" "}
-          {tournament.starting_stack} jetons · {tournament.min_players} à{" "}
-          {tournament.max_players ?? "∞"} joueurs
-          {tournament.scheduled_at &&
-            ` · ${new Date(tournament.scheduled_at).toLocaleString("fr-FR", { timeZone: "Europe/Paris" })}`}
-        </p>
+
+        <div className="flex flex-wrap gap-2">
+          <span className="chip">👤 Organisé par {organizer?.pseudo ?? "—"}</span>
+          <span className="chip chip-money">💶 Buy-in {tournament.buy_in} €</span>
+          <span className="chip chip-money">🎰 {tournament.starting_stack} jetons</span>
+          <span className="chip">
+            👥 {tournament.min_players} à {tournament.max_players ?? "∞"} joueurs
+          </span>
+          {tournament.scheduled_at && (
+            <span className="chip chip-date">
+              📅{" "}
+              {new Date(tournament.scheduled_at).toLocaleString("fr-FR", {
+                timeZone: "Europe/Paris",
+                dateStyle: "long",
+                timeStyle: "short",
+              })}
+            </span>
+          )}
+        </div>
+
         {tournament.location && (
-          <p className="text-sm text-ink-soft">
-            📍 {tournament.location}{" "}
+          <div className="flex flex-wrap items-center justify-between gap-2 border-t border-line pt-3">
+            <span className="flex items-center gap-2 text-sm text-ink-soft">
+              📍 {tournament.location}
+            </span>
             <a
               href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(tournament.location)}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="link"
+              className="ext-link"
             >
               Voir sur Google Maps ↗
             </a>
-          </p>
+          </div>
         )}
 
-        <div className="flex flex-wrap gap-2">
-          {tournament.rebuy_enabled && (
-            <span className="badge">
-              Recave {tournament.rebuy_price}€ → {tournament.rebuy_chips} jetons
-              {tournament.rebuy_max_per_player ? ` (max ${tournament.rebuy_max_per_player})` : ""}
-            </span>
-          )}
-          {tournament.addon_enabled && (
-            <span className="badge">
-              Add-on {tournament.addon_price}€ → {tournament.addon_chips} jetons
-            </span>
-          )}
-          {tournament.bounty_enabled && (
-            <span className="badge">
-              Bounty {tournament.bounty_amount}€{tournament.bounty_progressive ? " (progressif)" : ""}
-            </span>
-          )}
-          {tournament.guarantee_amount && (
-            <span className="badge">Garantie {tournament.guarantee_amount}€</span>
-          )}
-        </div>
+        {(tournament.rebuy_enabled ||
+          tournament.addon_enabled ||
+          tournament.bounty_enabled ||
+          tournament.guarantee_amount) && (
+          <div className="flex flex-wrap gap-2">
+            {tournament.rebuy_enabled && (
+              <span className="badge">
+                Recave {tournament.rebuy_price}€ → {tournament.rebuy_chips} jetons
+                {tournament.rebuy_max_per_player ? ` (max ${tournament.rebuy_max_per_player})` : ""}
+              </span>
+            )}
+            {tournament.addon_enabled && (
+              <span className="badge">
+                Add-on {tournament.addon_price}€ → {tournament.addon_chips} jetons
+              </span>
+            )}
+            {tournament.bounty_enabled && (
+              <span className="badge">
+                Bounty {tournament.bounty_amount}€{tournament.bounty_progressive ? " (progressif)" : ""}
+              </span>
+            )}
+            {tournament.guarantee_amount && (
+              <span className="badge">Garantie {tournament.guarantee_amount}€</span>
+            )}
+          </div>
+        )}
       </div>
 
       {payouts && payouts.length > 0 && (
-        <div className="card">
-          <h2 className="font-semibold">Prize pool : {prizePool.toLocaleString("fr-FR")} €</h2>
-          <p className="mb-2 text-xs text-ink-faint">
+        <div className="card section-money">
+          <p className="section-eyebrow">
+            <span className="dot" />
+            Cagnotte
+          </p>
+          <h2 className="text-3xl font-semibold" style={{ color: "var(--gold-strong)" }}>
+            {prizePool.toLocaleString("fr-FR")} €
+          </h2>
+          <p className="mb-3 mt-1 text-xs text-ink-faint">
             {paidCount} buy-in{paidCount > 1 ? "s" : ""} payé{paidCount > 1 ? "s" : ""} sur{" "}
             {allPlayers.length} inscrit{allPlayers.length > 1 ? "s" : ""}
           </p>
@@ -319,16 +346,14 @@ export default async function TournoiPage({
             </p>
           )}
 
-          <Link
-            href={`/tournois/${tournament.id}/affichage`}
-            target="_blank"
-            className="link mt-2 inline-block text-sm"
-          >
-            Ouvrir l&apos;écran d&apos;affichage ↗
-          </Link>
-          <Link href={`/tournois/${tournament.id}/tables`} className="link mt-1 inline-block text-sm">
-            Voir les tables ↗
-          </Link>
+          <div className="mt-3 flex flex-wrap gap-2">
+            <Link href={`/tournois/${tournament.id}/affichage`} target="_blank" className="ext-link">
+              Ouvrir l&apos;écran d&apos;affichage ↗
+            </Link>
+            <Link href={`/tournois/${tournament.id}/tables`} className="ext-link">
+              Voir les tables ↗
+            </Link>
+          </div>
 
           {canManage && (
             <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-line pt-3">
@@ -414,8 +439,11 @@ export default async function TournoiPage({
       )}
 
       {canManage && canJoin && (
-        <div className="card flex flex-col gap-3">
-          <h2 className="font-semibold">Invitations & demandes</h2>
+        <div className="card section-manage flex flex-col gap-3">
+          <p className="section-eyebrow">
+            <span className="dot" />
+            Gestion — invitations &amp; demandes
+          </p>
 
           <form action={inviteToTournament.bind(null, tournament.id)} className="flex items-center gap-2">
             <PseudoAutocomplete name="pseudo" placeholder="Pseudo à inviter" />
@@ -450,12 +478,12 @@ export default async function TournoiPage({
                   <span>{getPseudo(r)}</span>
                   <div className="flex gap-2">
                     <form action={respondToJoinRequest.bind(null, r.id, true)}>
-                      <button type="submit" className="link">
+                      <button type="submit" className="pill-btn pill-approve">
                         Approuver
                       </button>
                     </form>
                     <form action={respondToJoinRequest.bind(null, r.id, false)}>
-                      <button type="submit" className="link-danger">
+                      <button type="submit" className="pill-btn pill-reject">
                         Refuser
                       </button>
                     </form>
@@ -488,7 +516,7 @@ export default async function TournoiPage({
           <button
             type="submit"
             disabled={!enoughActivePlayers || !allActivePaid}
-            className="btn btn-secondary w-full"
+            className="btn btn-primary w-full"
           >
             Démarrer le tournoi
           </button>
@@ -625,7 +653,7 @@ export default async function TournoiPage({
                           </option>
                         ))}
                     </select>
-                    <button type="submit" className="link-danger">
+                    <button type="submit" className="pill-btn pill-reject">
                       Valider l&apos;élimination
                     </button>
                   </form>
