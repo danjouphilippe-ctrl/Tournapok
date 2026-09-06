@@ -2,6 +2,7 @@ import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { updateEvent } from "@/app/evenements/actions";
 import { EventForm, type EventFormValues } from "@/components/EventForm";
+import { getManagedClubOptions } from "@/lib/clubOptions";
 
 export default async function ModifierEvenementPage({
   params,
@@ -36,11 +37,16 @@ export default async function ModifierEvenementPage({
     logoUrl: event.logo_url ?? "",
     organisation: event.organisation ?? "",
     maxPlayers: event.max_players,
+    clubId: event.club_id ?? "",
+    visibility: event.visibility,
   };
+
+  const clubOptions = await getManagedClubOptions(supabase, user.id);
 
   return (
     <EventForm
       action={updateEvent.bind(null, id)}
+      clubOptions={clubOptions}
       title="Modifier l'évènement"
       submitLabel="Enregistrer les modifications"
       pendingLabel="Enregistrement..."

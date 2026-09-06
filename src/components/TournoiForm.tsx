@@ -53,6 +53,8 @@ export type TournoiFormValues = {
   blindStructureId: string;
   customLevels: StructureLevelInput[];
   chipImageUrl: string;
+  clubId: string;
+  visibility: string;
 };
 
 const defaultValues: TournoiFormValues = {
@@ -86,10 +88,13 @@ const defaultValues: TournoiFormValues = {
   blindStructureId: "",
   customLevels: [defaultLevel()],
   chipImageUrl: "",
+  clubId: "",
+  visibility: "private",
 };
 
 export function TournoiForm({
   structureOptions,
+  clubOptions,
   action,
   title,
   submitLabel,
@@ -100,6 +105,7 @@ export function TournoiForm({
   eventId,
 }: {
   structureOptions: { id: string; label: string }[];
+  clubOptions: { id: string; name: string }[];
   action: (state: TournamentFormState, formData: FormData) => Promise<TournamentFormState>;
   title: string;
   submitLabel: string;
@@ -114,6 +120,8 @@ export function TournoiForm({
 
   const [blindStructureId, setBlindStructureId] = useState(values.blindStructureId);
   const [customLevels, setCustomLevels] = useState(values.customLevels);
+  const [clubId, setClubId] = useState(values.clubId);
+  const [visibility, setVisibility] = useState(values.visibility);
 
   const [rebuyEnabled, setRebuyEnabled] = useState(values.rebuyEnabled);
   const [addonEnabled, setAddonEnabled] = useState(values.addonEnabled);
@@ -205,6 +213,41 @@ export function TournoiForm({
               />
             </Field>
           </div>
+        </Section>
+
+        <Section title="Club & visibilité">
+          <Field label="Club (optionnel)">
+            <select
+              value={clubId}
+              onChange={(e) => {
+                setClubId(e.target.value);
+                if (!e.target.value && visibility === "club") setVisibility("private");
+              }}
+              name="club_id"
+              className="input"
+            >
+              <option value="">— Aucun club —</option>
+              {clubOptions.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.name}
+                </option>
+              ))}
+            </select>
+          </Field>
+          <Field label="Visibilité">
+            <select
+              name="visibility"
+              value={visibility}
+              onChange={(e) => setVisibility(e.target.value)}
+              className="input"
+            >
+              <option value="private">Privé — sur invitation uniquement</option>
+              <option value="club" disabled={!clubId}>
+                Club — visible par les membres du club
+              </option>
+              <option value="public">Public — visible par tous les joueurs connectés</option>
+            </select>
+          </Field>
         </Section>
 
         <Section title="Buy-in & tapis de départ">

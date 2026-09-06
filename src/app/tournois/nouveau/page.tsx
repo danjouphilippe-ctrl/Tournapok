@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { createTournament } from "@/app/tournois/actions";
 import { TournoiForm } from "@/components/TournoiForm";
+import { getManagedClubOptions } from "@/lib/clubOptions";
 
 export default async function NouveauTournoiPage() {
   const supabase = await createClient();
@@ -31,9 +32,12 @@ export default async function NouveauTournoiPage() {
     };
   });
 
+  const clubOptions = await getManagedClubOptions(supabase, user.id);
+
   return (
     <TournoiForm
       structureOptions={structureOptions}
+      clubOptions={clubOptions}
       action={createTournament}
       title="Créer un tournoi"
       submitLabel="Créer le tournoi"

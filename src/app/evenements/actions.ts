@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { getResourceAccess, type ResourceAccess } from "@/lib/resourceAccess";
+import { assertCanUseClub, getResourceAccess, type ResourceAccess } from "@/lib/resourceAccess";
 
 export type EventFormState = {
   error: string | null;
@@ -17,6 +17,8 @@ type EventRowInput = {
   logo_url: string | null;
   organisation: string | null;
   max_players: number | null;
+  club_id: string | null;
+  visibility: string;
 };
 
 type ParsedEventFields = { ok: false; error: string } | { ok: true; row: EventRowInput };
@@ -45,6 +47,8 @@ function parseEventFields(formData: FormData): ParsedEventFields {
   const maxPlayersRaw = formData.get("max_players");
   const maxPlayers =
     maxPlayersRaw === null || maxPlayersRaw === "" ? null : Number(maxPlayersRaw);
+  const clubId = String(formData.get("club_id") ?? "").trim() || null;
+  const visibility = String(formData.get("visibility") ?? "private");
 
   if (!name) {
     return { ok: false, error: "L'évènement doit avoir un nom." };
@@ -54,6 +58,12 @@ function parseEventFields(formData: FormData): ParsedEventFields {
   }
   if (!location) {
     return { ok: false, error: "Le lieu est obligatoire." };
+  }
+  if (!["public", "club", "private"].includes(visibility)) {
+    return { ok: false, error: "Visibilité invalide." };
+  }
+  if (visibility === "club" && !clubId) {
+    return { ok: false, error: "Choisis un club pour une visibilité réservée au club." };
   }
 
   return {
@@ -66,6 +76,8 @@ function parseEventFields(formData: FormData): ParsedEventFields {
       logo_url: logoUrl || null,
       organisation: organisation || null,
       max_players: maxPlayers !== null && Number.isFinite(maxPlayers) ? maxPlayers : null,
+      club_id: clubId,
+      visibility,
     },
   };
 }
@@ -82,6 +94,9 @@ export async function createEvent(
 
   const parsed = parseEventFields(formData);
   if (!parsed.ok) return { error: parsed.error };
+
+  const clubError = await assertCanUseClub(supabase, parsed.row.club_id, user.id);
+  if (clubError) return { error: clubError };
 
   const { data: event, error } = await supabase
     .from("events")
@@ -103,12 +118,16 @@ export async function updateEvent(
   formData: FormData,
 ): Promise<EventFormState> {
   const supabase = await createClient();
-  if (!(await getEventAccess(supabase, eventId))) {
+  const access = await getEventAccess(supabase, eventId);
+  if (!access) {
     return { error: "Tu n'as pas les droits pour modifier cet évènement." };
   }
 
   const parsed = parseEventFields(formData);
   if (!parsed.ok) return { error: parsed.error };
+
+  const clubError = await assertCanUseClub(supabase, parsed.row.club_id, access.userId);
+  if (clubError) return { error: clubError };
 
   const { error } = await supabase.from("events").update(parsed.row).eq("id", eventId);
 

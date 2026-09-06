@@ -2,6 +2,7 @@ import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { createTournament } from "@/app/tournois/actions";
 import { TournoiForm } from "@/components/TournoiForm";
+import { getManagedClubOptions } from "@/lib/clubOptions";
 
 export default async function NouveauTournoiDansEvenementPage({
   params,
@@ -47,9 +48,12 @@ export default async function NouveauTournoiDansEvenementPage({
     };
   });
 
+  const clubOptions = await getManagedClubOptions(supabase, user.id);
+
   return (
     <TournoiForm
       structureOptions={structureOptions}
+      clubOptions={clubOptions}
       action={createTournament}
       title="Créer un tournoi dans l'évènement"
       submitLabel="Créer le tournoi"

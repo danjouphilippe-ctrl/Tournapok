@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import type { StructureLevelInput } from "@/app/structures/actions";
 import { initialSeating, rebalanceAfterRemoval, seatNewPlayer, type SeatedPlayer } from "@/lib/tableBalancing";
-import { getResourceAccess, type ResourceAccess } from "@/lib/resourceAccess";
+import { assertCanUseClub, getResourceAccess, type ResourceAccess } from "@/lib/resourceAccess";
 
 export type TournamentFormState = {
   error: string | null;
@@ -47,6 +47,8 @@ type TournamentRowInput = {
   payout_places: number | null;
   blind_structure_id: string | null;
   chip_image_url: string | null;
+  club_id: string | null;
+  visibility: string;
 };
 
 export type PayoutInput = { place: number; percentage: number };
@@ -97,6 +99,8 @@ function parseTournamentFields(formData: FormData): ParsedTournamentFields {
   const blindStructureId = String(formData.get("blind_structure_id") ?? "") || null;
   const customLevelsRaw = String(formData.get("custom_levels_json") ?? "[]");
   const chipImageUrl = String(formData.get("chip_image_url") ?? "").trim() || null;
+  const clubId = String(formData.get("club_id") ?? "").trim() || null;
+  const visibility = String(formData.get("visibility") ?? "private");
 
   if (!name) {
     return { ok: false, error: "Le tournoi doit avoir un nom." };
@@ -118,6 +122,12 @@ function parseTournamentFields(formData: FormData): ParsedTournamentFields {
       ok: false,
       error: "Le nombre maximum de joueurs ne peut pas être inférieur au minimum.",
     };
+  }
+  if (!["public", "club", "private"].includes(visibility)) {
+    return { ok: false, error: "Visibilité invalide." };
+  }
+  if (visibility === "club" && !clubId) {
+    return { ok: false, error: "Choisis un club pour une visibilité réservée au club." };
   }
   if (rebuyEnabled && (!rebuyPrice || !rebuyChips)) {
     return { ok: false, error: "Renseigne le prix et les jetons de la recave." };
@@ -197,11 +207,14 @@ function parseTournamentFields(formData: FormData): ParsedTournamentFields {
       payout_places: payouts.length > 0 ? payouts.length : null,
       blind_structure_id: blindStructureId,
       chip_image_url: chipImageUrl,
+      club_id: clubId,
+      visibility,
     },
     blindStructureId,
     customLevels,
   };
 }
+
 
 async function applyBlindLevels(
   supabase: Awaited<ReturnType<typeof createClient>>,
@@ -269,6 +282,9 @@ export async function createTournament(
   const parsed = parseTournamentFields(formData);
   if (!parsed.ok) return { error: parsed.error };
 
+  const clubError = await assertCanUseClub(supabase, parsed.row.club_id, user.id);
+  if (clubError) return { error: clubError };
+
   const eventId = String(formData.get("event_id") ?? "").trim() || null;
 
   const { data: tournament, error } = await supabase
@@ -312,6 +328,9 @@ export async function updateTournament(
 
   const parsed = parseTournamentFields(formData);
   if (!parsed.ok) return { error: parsed.error };
+
+  const clubError = await assertCanUseClub(supabase, parsed.row.club_id, user.id);
+  if (clubError) return { error: clubError };
 
   const { error } = await supabase
     .from("tournaments")

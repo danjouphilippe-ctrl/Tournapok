@@ -27,6 +27,8 @@ export type EventFormValues = {
   logoUrl: string;
   organisation: string;
   maxPlayers: number | null;
+  clubId: string;
+  visibility: string;
 };
 
 const defaultValues: EventFormValues = {
@@ -37,10 +39,13 @@ const defaultValues: EventFormValues = {
   logoUrl: "",
   organisation: "",
   maxPlayers: null,
+  clubId: "",
+  visibility: "private",
 };
 
 export function EventForm({
   action,
+  clubOptions,
   title,
   submitLabel,
   pendingLabel,
@@ -49,6 +54,7 @@ export function EventForm({
   userId,
 }: {
   action: (state: EventFormState, formData: FormData) => Promise<EventFormState>;
+  clubOptions: { id: string; name: string }[];
   title: string;
   submitLabel: string;
   pendingLabel: string;
@@ -59,6 +65,8 @@ export function EventForm({
   const values = { ...defaultValues, ...initial };
   const [state, formAction, pending] = useActionState(action, emptyState);
   const [organisationValue, setOrganisationValue] = useState(values.organisation);
+  const [clubId, setClubId] = useState(values.clubId);
+  const [visibility, setVisibility] = useState(values.visibility);
 
   const dateRef = useRef<HTMLInputElement>(null);
   const timeRef = useRef<HTMLInputElement>(null);
@@ -151,6 +159,40 @@ export function EventForm({
             className="input"
           />
         </label>
+
+        <Field label="Club (optionnel)">
+          <select
+            value={clubId}
+            onChange={(e) => {
+              setClubId(e.target.value);
+              if (!e.target.value && visibility === "club") setVisibility("private");
+            }}
+            name="club_id"
+            className="input"
+          >
+            <option value="">— Aucun club —</option>
+            {clubOptions.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.name}
+              </option>
+            ))}
+          </select>
+        </Field>
+
+        <Field label="Visibilité">
+          <select
+            name="visibility"
+            value={visibility}
+            onChange={(e) => setVisibility(e.target.value)}
+            className="input"
+          >
+            <option value="private">Privé — sur invitation uniquement</option>
+            <option value="club" disabled={!clubId}>
+              Club — visible par les membres du club
+            </option>
+            <option value="public">Public — visible par tous les joueurs connectés</option>
+          </select>
+        </Field>
 
         {state.error && (
           <p className="text-sm text-danger" role="alert">

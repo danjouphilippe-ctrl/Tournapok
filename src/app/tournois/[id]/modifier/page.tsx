@@ -2,6 +2,7 @@ import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { updateTournament } from "@/app/tournois/actions";
 import { TournoiForm, type TournoiFormValues } from "@/components/TournoiForm";
+import { getManagedClubOptions } from "@/lib/clubOptions";
 
 export default async function ModifierTournoiPage({
   params,
@@ -98,11 +99,16 @@ export default async function ModifierTournoiPage({
       ante: l.ante,
       durationMinutes: l.duration_minutes,
     })),
+    clubId: tournament.club_id ?? "",
+    visibility: tournament.visibility,
   };
+
+  const clubOptions = await getManagedClubOptions(supabase, user.id);
 
   return (
     <TournoiForm
       structureOptions={structureOptions}
+      clubOptions={clubOptions}
       action={updateTournament.bind(null, id)}
       title="Modifier le tournoi"
       submitLabel="Enregistrer les modifications"

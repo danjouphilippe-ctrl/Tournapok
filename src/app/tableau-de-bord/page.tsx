@@ -99,6 +99,10 @@ export default async function TableauDeBordPage() {
           Voir les tournois
         </Link>
 
+        <Link href="/clubs" className="btn btn-secondary">
+          Mes clubs
+        </Link>
+
         <Link href="/structures" className="btn btn-secondary">
           Structures de blindes
         </Link>
