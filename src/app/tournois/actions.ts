@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import type { StructureLevelInput } from "@/app/structures/actions";
 import { initialSeating, rebalanceAfterRemoval, seatNewPlayer, type SeatedPlayer } from "@/lib/tableBalancing";
+import { getResourceAccess, type ResourceAccess } from "@/lib/resourceAccess";
 
 export type TournamentFormState = {
   error: string | null;
@@ -593,36 +594,17 @@ async function getMaxLevel(
 }
 
 /** Vérifie que l'utilisateur connecté est l'organisateur ou un
- * co-administrateur du tournoi. Ne doit jamais remplacer les policies
- * RLS (qui restent la protection réelle), mais évite qu'une action
- * échoue en silence quand elles bloquent la mise à jour : on le sait
- * tout de suite, avant même de tenter l'écriture. */
-async function getManageAccess(
+ * co-administrateur du tournoi (voir getResourceAccess). */
+function getManageAccess(
   supabase: Awaited<ReturnType<typeof createClient>>,
   tournamentId: string,
-): Promise<{ userId: string; isOwner: boolean } | null> {
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return null;
-
-  const { data: tournament } = await supabase
-    .from("tournaments")
-    .select("created_by")
-    .eq("id", tournamentId)
-    .single();
-  if (!tournament) return null;
-  if (tournament.created_by === user.id) return { userId: user.id, isOwner: true };
-
-  const { data: admin } = await supabase
-    .from("tournament_admins")
-    .select("user_id")
-    .eq("tournament_id", tournamentId)
-    .eq("user_id", user.id)
-    .maybeSingle();
-  if (!admin) return null;
-
-  return { userId: user.id, isOwner: false };
+): Promise<ResourceAccess> {
+  return getResourceAccess(supabase, tournamentId, {
+    resourceTable: "tournaments",
+    ownerColumn: "created_by",
+    adminTable: "tournament_admins",
+    adminResourceColumn: "tournament_id",
+  });
 }
 
 async function writeSeating(

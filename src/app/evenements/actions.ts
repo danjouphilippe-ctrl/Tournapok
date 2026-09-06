@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { getResourceAccess, type ResourceAccess } from "@/lib/resourceAccess";
 
 export type EventFormState = {
   error: string | null;
@@ -21,35 +22,17 @@ type EventRowInput = {
 type ParsedEventFields = { ok: false; error: string } | { ok: true; row: EventRowInput };
 
 /** Vérifie que l'utilisateur connecté est l'organisateur ou un
- * co-administrateur de l'évènement (même logique que pour les
- * tournois : ne remplace pas les policies RLS, mais évite qu'une
- * action échoue en silence quand elles bloquent la mise à jour). */
-async function getEventAccess(
+ * co-administrateur de l'évènement (voir getResourceAccess). */
+function getEventAccess(
   supabase: Awaited<ReturnType<typeof createClient>>,
   eventId: string,
-): Promise<{ userId: string; isOwner: boolean } | null> {
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return null;
-
-  const { data: event } = await supabase
-    .from("events")
-    .select("created_by")
-    .eq("id", eventId)
-    .single();
-  if (!event) return null;
-  if (event.created_by === user.id) return { userId: user.id, isOwner: true };
-
-  const { data: admin } = await supabase
-    .from("event_admins")
-    .select("user_id")
-    .eq("event_id", eventId)
-    .eq("user_id", user.id)
-    .maybeSingle();
-  if (!admin) return null;
-
-  return { userId: user.id, isOwner: false };
+): Promise<ResourceAccess> {
+  return getResourceAccess(supabase, eventId, {
+    resourceTable: "events",
+    ownerColumn: "created_by",
+    adminTable: "event_admins",
+    adminResourceColumn: "event_id",
+  });
 }
 
 function parseEventFields(formData: FormData): ParsedEventFields {

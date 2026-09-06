@@ -18,7 +18,9 @@ export default async function TableauDeBordPage() {
     supabase.from("profiles").select("pseudo, avatar_url").eq("id", user.id).single(),
     supabase
       .from("tournament_invitations")
-      .select("id, tournaments(id, name)")
+      .select(
+        "id, tournaments(id, name, buy_in, scheduled_at, location, events(name, location, scheduled_at))",
+      )
       .eq("invited_user_id", user.id)
       .eq("status", "pending"),
   ]);
@@ -47,17 +49,27 @@ export default async function TableauDeBordPage() {
       </div>
 
       {pendingInvitations.length > 0 && (
-        <div className="card flex flex-col gap-3">
+        <div className="card flex flex-col gap-4">
           <h2 className="font-semibold">Invitations reçues</h2>
           {pendingInvitations.map((inv) => {
             const t = Array.isArray(inv.tournaments) ? inv.tournaments[0] : inv.tournaments;
             if (!t) return null;
+            const event = Array.isArray(t.events) ? t.events[0] : t.events;
+            const scheduledAt = t.scheduled_at ?? event?.scheduled_at;
+            const location = t.location ?? event?.location;
             return (
-              <div key={inv.id} className="flex items-center justify-between text-sm">
-                <Link href={`/tournois/${t.id}`} className="link">
+              <div key={inv.id} className="flex flex-col gap-2 border-t border-line pt-3 first:border-none first:pt-0">
+                <Link href={`/tournois/${t.id}`} className="link font-medium">
                   {t.name}
                 </Link>
-                <div className="flex gap-2">
+                <p className="text-sm text-ink-soft">
+                  Buy-in {t.buy_in}€
+                  {scheduledAt &&
+                    ` · ${new Date(scheduledAt).toLocaleString("fr-FR", { timeZone: "Europe/Paris" })}`}
+                  {location && ` · 📍 ${location}`}
+                  {event?.name && ` · ${event.name}`}
+                </p>
+                <div className="flex flex-wrap items-center gap-2">
                   <form action={respondToInvitation.bind(null, inv.id, true)}>
                     <button type="submit" className="btn btn-primary btn-sm">
                       Accepter
@@ -68,6 +80,9 @@ export default async function TableauDeBordPage() {
                       Refuser
                     </button>
                   </form>
+                  <Link href={`/tournois/${t.id}`} className="link text-sm">
+                    Voir tous les détails
+                  </Link>
                 </div>
               </div>
             );

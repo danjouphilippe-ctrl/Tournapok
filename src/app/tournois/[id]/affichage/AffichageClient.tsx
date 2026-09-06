@@ -324,7 +324,7 @@ export function AffichageClient({
   return (
     <main
       className={`flex flex-col gap-3 bg-background px-4 py-3 text-foreground lg:px-6 ${
-        isRunningScreen ? "h-screen overflow-y-auto" : "min-h-screen py-6 gap-6"
+        isRunningScreen ? "min-h-screen lg:h-screen lg:overflow-y-auto" : "min-h-screen py-6 gap-6"
       }`}
     >
       {!isRunningScreen && (
@@ -381,10 +381,10 @@ export function AffichageClient({
       ) : tournament.status !== "en_cours" ? (
         <p className="text-center text-xl text-ink-soft">Le tournoi n&apos;est pas en cours.</p>
       ) : (
-        <div className="flex min-h-0 flex-1 flex-col gap-3">
-        <div className="grid min-h-0 flex-1 grid-cols-1 gap-3 lg:grid-cols-[320px_1fr_320px]">
+        <div className="flex flex-col gap-3 lg:min-h-0 lg:flex-1">
+        <div className="grid grid-cols-1 gap-3 lg:min-h-0 lg:flex-1 lg:grid-cols-[320px_1fr_320px]">
           {/* Colonne gauche : logo + statistiques d'inscription */}
-          <div className="flex h-full min-h-0 flex-col gap-2">
+          <div className="flex flex-col gap-2 lg:h-full lg:min-h-0">
             {tournament.chip_image_url && (
               <div className="clock-tile flex shrink-0 items-center justify-center py-4">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -404,8 +404,8 @@ export function AffichageClient({
           </div>
 
           {/* Colonne centrale : horloge + stats de jeu */}
-          <div className="flex min-h-0 flex-col gap-3">
-            <div className="clock-tile flex min-h-0 flex-1 flex-col items-center justify-evenly overflow-hidden py-2">
+          <div className="flex flex-col gap-3 lg:min-h-0">
+            <div className="clock-tile flex flex-col items-center gap-3 py-6 lg:min-h-0 lg:flex-1 lg:justify-evenly lg:gap-0 lg:overflow-hidden lg:py-2">
               <h2 className="mb-[clamp(0.5rem,4vh,2rem)] text-center font-display text-[clamp(1.5rem,5.5vh,3.75rem)] font-bold leading-tight">
                 {cfg.title || tournament.name}
               </h2>
@@ -531,9 +531,9 @@ export function AffichageClient({
           </div>
 
           {/* Colonne droite : joueurs, triés par ordre alphabétique */}
-          <div className="clock-tile flex min-h-0 flex-col overflow-hidden py-2">
+          <div className="clock-tile flex flex-col py-2 lg:min-h-0 lg:overflow-hidden">
             <p className="mb-1 text-xs text-ink-faint">Joueurs ({active.length})</p>
-            <div className="flex min-h-0 flex-1 flex-col divide-y divide-line overflow-y-auto">
+            <div className="flex flex-col divide-y divide-line lg:min-h-0 lg:flex-1 lg:overflow-y-auto">
               {sortedActive.map((p) => {
                 const rebuyAllowed =
                   tournament.rebuy_enabled &&
@@ -610,7 +610,7 @@ function Stat({
     <div
       className={`clock-tile ${variant === "success" ? "clock-tile-success" : ""} ${
         grow
-          ? "flex min-h-0 flex-1 flex-col items-center justify-center gap-1 overflow-hidden py-[clamp(0.5rem,2vh,2rem)] text-center"
+          ? "flex flex-col items-center justify-center gap-1 py-3 text-center lg:min-h-0 lg:flex-1 lg:overflow-hidden lg:py-[clamp(0.5rem,2vh,2rem)]"
           : compact
             ? "py-2"
             : ""
@@ -683,7 +683,9 @@ function PlayerRow({
   return (
     <div className="py-1.5 text-sm">
       <div className="flex flex-wrap items-center gap-2">
-        <span className="min-w-0 flex-1 truncate font-medium">{pseudo}</span>
+        <span className="min-w-0 flex-1 basis-full truncate font-medium sm:basis-auto">
+          {pseudo}
+        </span>
         {player.table_number && (
           <span className="shrink-0 text-xs text-ink-faint">
             T{player.table_number} · S{player.seat_number}
