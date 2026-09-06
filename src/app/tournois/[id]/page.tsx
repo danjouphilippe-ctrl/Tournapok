@@ -8,6 +8,7 @@ import {
   cancelInvitation,
   duplicateTournament,
   eliminatePlayer,
+  inviteClubMembers,
   inviteToTournament,
   nextLevel,
   pauseClock,
@@ -150,6 +151,13 @@ export default async function TournoiPage({
     ? await supabase.from("events").select("id, name").eq("id", tournament.event_id).single()
     : { data: null };
 
+  const { data: clubMembers } = tournament.club_id
+    ? await supabase
+        .from("club_members")
+        .select("user_id, profiles!club_members_user_id_fkey(pseudo)")
+        .eq("club_id", tournament.club_id)
+    : { data: null };
+
   const allPlayers = players ?? [];
   const allAdmins = admins ?? [];
   const levels = blindLevels ?? [];
@@ -163,6 +171,11 @@ export default async function TournoiPage({
   const isRegistered = allPlayers.some((p) => p.player_id === user.id);
   const myInvitation = pendingInvitations.find((i) => i.invited_user_id === user.id);
   const myRequest = pendingRequests.find((r) => r.requester_id === user.id);
+  const invitableClubMembers = (clubMembers ?? []).filter(
+    (m) =>
+      !allPlayers.some((p) => p.player_id === m.user_id) &&
+      !pendingInvitations.some((i) => i.invited_user_id === m.user_id),
+  );
   const active = allPlayers.filter((p) => p.status === "inscrit");
   const finished = allPlayers
     .filter((p) => p.status !== "inscrit")
@@ -410,6 +423,24 @@ export default async function TournoiPage({
               Inviter
             </button>
           </form>
+
+          {tournament.club_id && invitableClubMembers.length > 0 && (
+            <form
+              action={inviteClubMembers.bind(null, tournament.id)}
+              className="flex flex-col gap-2 border-t border-line pt-3"
+            >
+              <p className="eyebrow">Membres du club</p>
+              {invitableClubMembers.map((m) => (
+                <label key={m.user_id} className="flex items-center gap-2 text-sm">
+                  <input type="checkbox" name="member_id" value={m.user_id} />
+                  {getPseudo(m)}
+                </label>
+              ))}
+              <button type="submit" className="btn btn-secondary btn-sm w-fit">
+                Inviter la sélection
+              </button>
+            </form>
+          )}
 
           {pendingRequests.length > 0 && (
             <div className="flex flex-col gap-2">

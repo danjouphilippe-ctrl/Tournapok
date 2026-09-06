@@ -410,6 +410,37 @@ export async function inviteToTournament(tournamentId: string, formData: FormDat
   revalidatePath(`/tournois/${tournamentId}`);
 }
 
+/** Invite en une fois tous les membres du club cochés dans le
+ * formulaire ("value" = leur user_id). Boucle plutôt qu'un insert
+ * multi-lignes : un membre déjà invité (doublon, 23505) ne doit pas
+ * faire échouer les autres invitations de la sélection. */
+export async function inviteClubMembers(tournamentId: string, formData: FormData) {
+  const supabase = await createClient();
+  const access = await getManageAccess(supabase, tournamentId);
+  if (!access) return;
+
+  const memberIds = formData.getAll("member_id").map(String);
+  if (memberIds.length === 0) return;
+
+  const failures: string[] = [];
+  for (const memberId of memberIds) {
+    const { error } = await supabase.from("tournament_invitations").insert({
+      tournament_id: tournamentId,
+      invited_user_id: memberId,
+      invited_by: access.userId,
+    });
+    if (error && error.code !== "23505") {
+      failures.push(error.message);
+    }
+  }
+
+  revalidatePath(`/tournois/${tournamentId}`);
+
+  if (failures.length > 0) {
+    redirect(`/tournois/${tournamentId}?erreur=${encodeURIComponent(failures.join(" · "))}`);
+  }
+}
+
 export async function cancelInvitation(invitationId: string, tournamentId: string) {
   const supabase = await createClient();
   if (!(await getManageAccess(supabase, tournamentId))) return;
