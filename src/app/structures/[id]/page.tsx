@@ -67,25 +67,30 @@ export default async function StructureDetailPage({
         </p>
       )}
 
-      <div>
+      <div className="hero-card flex flex-col gap-3">
         <h1 className="text-2xl font-semibold">{structure.name}</h1>
-        <p className="text-sm text-ink-soft">
-          {structure.created_by
-            ? `Par ${getPseudo(structure) ?? "un joueur"}`
-            : "Officielle"}{" "}
-          · {SPEED_LABELS[structure.speed_preset] ?? structure.speed_preset}
-          {stats ? ` · ⭐ ${stats.avg_rating} (${stats.ratings_count} avis)` : " · pas encore noté"}
-        </p>
-        {structure.description && (
-          <p className="mt-2 text-sm text-ink-soft">{structure.description}</p>
-        )}
-        <Link href={`/structures/nouvelle?from=${structure.id}`} className="link mt-2 inline-block text-sm">
+        {structure.description && <p className="text-sm text-ink-soft">{structure.description}</p>}
+        <div className="flex flex-wrap gap-2">
+          <span className="chip">
+            👤 {structure.created_by ? `Par ${getPseudo(structure) ?? "un joueur"}` : "Officielle"}
+          </span>
+          <span className="chip">⏱ {SPEED_LABELS[structure.speed_preset] ?? structure.speed_preset}</span>
+          {stats ? (
+            <span className="chip chip-money">⭐ {stats.avg_rating} ({stats.ratings_count} avis)</span>
+          ) : (
+            <span className="chip">Pas encore noté</span>
+          )}
+        </div>
+        <Link href={`/structures/nouvelle?from=${structure.id}`} className="link text-sm w-fit">
           Dupliquer et personnaliser
         </Link>
       </div>
 
-      <div>
-        <h2 className="mb-2 font-semibold">Ta note</h2>
+      <div className="card section-accent">
+        <p className="section-eyebrow">
+          <span className="dot" />
+          Ta note
+        </p>
         <div className="flex gap-1">
           {[1, 2, 3, 4, 5].map((n) => (
             <form key={n} action={rateStructure.bind(null, structure.id, n)}>
