@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { addEventCoAdmin, removeEventCoAdmin } from "@/app/evenements/actions";
 import { DeleteEventButton } from "@/components/DeleteEventButton";
 import { PseudoAutocomplete } from "@/components/PseudoAutocomplete";
+import { FormattedText } from "@/components/FormattedText";
 
 const STATUT_LABELS: Record<string, string> = {
   inscription: "Inscriptions ouvertes",
@@ -88,7 +89,11 @@ export default async function EvenementPage({
           )}
           <h1 className="text-2xl font-semibold">{event.name}</h1>
         </div>
-        {event.description && <p className="text-sm text-ink-soft">{event.description}</p>}
+        {event.description && (
+          <p className="text-sm text-ink-soft">
+            <FormattedText text={event.description} />
+          </p>
+        )}
 
         <div className="flex flex-wrap gap-2">
           <span className="chip">👤 Organisé par {organizer?.pseudo ?? "—"}</span>
@@ -123,7 +128,9 @@ export default async function EvenementPage({
       {event.organisation && (
         <div className="card">
           <h2 className="mb-1 font-semibold">Organisation</h2>
-          <p className="whitespace-pre-wrap text-sm text-ink-soft">{event.organisation}</p>
+          <p className="whitespace-pre-wrap text-sm text-ink-soft">
+            <FormattedText text={event.organisation} />
+          </p>
         </div>
       )}
 

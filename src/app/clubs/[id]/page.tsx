@@ -11,6 +11,7 @@ import {
 import { DeleteClubButton } from "@/components/DeleteClubButton";
 import { PseudoAutocomplete } from "@/components/PseudoAutocomplete";
 import { ClubMemberRoleSelect } from "@/components/ClubMemberRoleSelect";
+import { FormattedText } from "@/components/FormattedText";
 
 const ROLE_LABELS: Record<string, string> = {
   owner: "Propriétaire",
@@ -115,7 +116,11 @@ export default async function ClubPage({
         ) : null}
         <div className="flex flex-col gap-3">
           <h1 className="text-2xl font-semibold">{club.name}</h1>
-          {club.description && <p className="text-sm text-ink-soft">{club.description}</p>}
+          {club.description && (
+            <p className="text-sm text-ink-soft">
+              <FormattedText text={club.description} />
+            </p>
+          )}
           <div className="flex flex-wrap gap-2">
             <span className="chip">👤 Créé par {organizer?.pseudo ?? "—"}</span>
             {club.location && <span className="chip">📍 {club.location}</span>}
@@ -128,8 +133,11 @@ export default async function ClubPage({
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-[minmax(0,1fr)_2fr]">
         {(club.legal_form || club.phone || club.email || club.address) && (
-          <div className="card flex flex-col gap-1 text-sm text-ink-soft">
-            <p className="eyebrow mb-1">Coordonnées</p>
+          <div className="card section-manage flex flex-col gap-1 text-sm text-ink-soft">
+            <p className="section-eyebrow">
+              <span className="dot" />
+              Coordonnées
+            </p>
             {club.legal_form && <p>{club.legal_form}</p>}
             {club.address && <p>📍 {club.address}</p>}
             {club.phone && <p>☎ {club.phone}</p>}

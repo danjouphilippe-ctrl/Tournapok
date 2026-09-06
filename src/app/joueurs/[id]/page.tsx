@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { FormattedText } from "@/components/FormattedText";
 
 const PLAYER_TYPE_LABELS: Record<string, string> = {
   serre_passif: "Serré-passif (Rock)",
@@ -65,7 +66,9 @@ export default async function JoueurPage({
       )}
 
       {profile.bio && (
-        <p className="whitespace-pre-wrap text-sm text-ink-soft">{profile.bio}</p>
+        <p className="whitespace-pre-wrap text-sm text-ink-soft">
+          <FormattedText text={profile.bio} />
+        </p>
       )}
 
       <Link href="/tournois" className="link text-sm">

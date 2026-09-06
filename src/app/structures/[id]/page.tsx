@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { rateStructure } from "@/app/structures/actions";
+import { FormattedText } from "@/components/FormattedText";
 
 const SPEED_LABELS: Record<string, string> = {
   standard: "Standard",
@@ -69,7 +70,11 @@ export default async function StructureDetailPage({
 
       <div className="hero-card flex flex-col gap-3">
         <h1 className="text-2xl font-semibold">{structure.name}</h1>
-        {structure.description && <p className="text-sm text-ink-soft">{structure.description}</p>}
+        {structure.description && (
+          <p className="text-sm text-ink-soft">
+            <FormattedText text={structure.description} />
+          </p>
+        )}
         <div className="flex flex-wrap gap-2">
           <span className="chip">
             👤 {structure.created_by ? `Par ${getPseudo(structure) ?? "un joueur"}` : "Officielle"}

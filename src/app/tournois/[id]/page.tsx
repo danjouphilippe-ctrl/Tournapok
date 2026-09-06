@@ -26,6 +26,7 @@ import {
 import { DeleteTournamentButton } from "@/components/DeleteTournamentButton";
 import { PseudoAutocomplete } from "@/components/PseudoAutocomplete";
 import { ConfirmButton } from "@/components/ConfirmButton";
+import { FormattedText } from "@/components/FormattedText";
 
 type DisplayConfig = {
   title: string | null;
@@ -241,7 +242,9 @@ export default async function TournoiPage({
           </Link>
         )}
         {tournament.description && (
-          <p className="text-sm text-ink-soft">{tournament.description}</p>
+          <p className="text-sm text-ink-soft">
+            <FormattedText text={tournament.description} />
+          </p>
         )}
 
         <div className="flex flex-wrap gap-2">
@@ -332,7 +335,7 @@ export default async function TournoiPage({
       )}
 
       {tournament.status === "en_cours" && currentLevel && (
-        <div className="card">
+        <div className="clock-tile">
           <p className="eyebrow">
             Niveau {currentLevel.level_number} ·{" "}
             {tournament.clock_status === "paused" ? "En pause" : "En cours"}
