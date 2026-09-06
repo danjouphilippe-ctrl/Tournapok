@@ -64,7 +64,12 @@ body {
   color: var(--color-foreground);
   font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
   background-image:
-    radial-gradient(ellipse 80% 50% at 50% -10%, rgba(178, 58, 74, 0.14), transparent);
+    radial-gradient(ellipse 26% 46% at 0% 0%,    rgba(178,58,74, 0.24) 0%, rgba(178,58,74, 0.08) 46%, transparent 76%),
+    radial-gradient(ellipse 26% 46% at 100% 0%,  rgba(178,58,74, 0.24) 0%, rgba(178,58,74, 0.08) 46%, transparent 76%),
+    radial-gradient(ellipse 26% 46% at 0% 100%,  rgba(178,58,74, 0.24) 0%, rgba(178,58,74, 0.08) 46%, transparent 76%),
+    radial-gradient(ellipse 26% 46% at 100% 100%,rgba(178,58,74, 0.24) 0%, rgba(178,58,74, 0.08) 46%, transparent 76%),
+    linear-gradient(rgba(178,58,74,0.10), rgba(178,58,74,0.10));
+  background-attachment: fixed;
   background-repeat: no-repeat;
 }
 
