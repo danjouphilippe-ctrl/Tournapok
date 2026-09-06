@@ -309,6 +309,72 @@ input[type="radio"] {
   border-color: var(--color-danger-strong);
 }
 
+/* Une carte cliquable se détache légèrement au survol (au lieu de se
+ * contenter de changer la couleur de sa bordure) — l'interface doit
+ * avoir l'air interactive avant même qu'on ait cliqué. */
+.card-link {
+  transition: transform 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease;
+}
+.card-link:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.3);
+  border-color: var(--color-line-strong);
+}
+
+/* Tuile de navigation (tableau de bord) : icône dans un badge coloré,
+ * plutôt qu'un simple emoji flottant, et le même détachement au survol. */
+.tile {
+  background: var(--color-surface);
+  border: 1px solid var(--color-line);
+  border-radius: 0.875rem;
+  padding: 1.5rem 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  text-align: center;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+}
+.tile:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.35);
+  border-color: var(--color-line-strong);
+}
+.tile-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 3.25rem;
+  height: 3.25rem;
+  border-radius: 9999px;
+  font-size: 1.5rem;
+  border: 1px solid var(--color-line);
+  transition: transform 0.18s ease;
+}
+.tile:hover .tile-icon {
+  transform: scale(1.08);
+}
+.tile-icon-accent {
+  background: var(--accent-soft);
+  border-color: var(--accent-line);
+}
+.tile-icon-gold {
+  background: var(--gold-soft);
+  border-color: var(--gold-line);
+}
+.tile-icon-teal {
+  background: var(--teal-soft);
+  border-color: var(--teal-line);
+}
+.tile-icon-slate {
+  background: var(--slate-soft);
+  border-color: var(--slate-line);
+}
+.tile-icon-success {
+  background: var(--success-soft);
+  border-color: var(--success-line);
+}
+
 /* Bandeau de couleur à gauche d'une carte + étiquette : on sait tout de
  * suite à quoi sert la section sans lire son contenu. */
 .section-eyebrow {

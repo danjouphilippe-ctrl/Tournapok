@@ -77,7 +77,7 @@ export default async function ClubsPage({
               <li key={c.id}>
                 <Link
                   href={`/clubs/${c.id}`}
-                  className="card flex items-center gap-3 transition-colors hover:border-ink-faint"
+                  className="card card-link flex items-center gap-3"
                 >
                   {c.logo_url ? (
                     // eslint-disable-next-line @next/next/no-img-element

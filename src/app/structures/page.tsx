@@ -55,7 +55,7 @@ export default async function StructuresPage() {
               <li key={s.id}>
                 <Link
                   href={`/structures/${s.id}`}
-                  className="card flex flex-col gap-1 transition-colors hover:border-ink-faint"
+                  className="card card-link flex flex-col gap-1"
                 >
                   <span className="font-medium">{s.name}</span>
                   <span className="text-sm text-ink-soft">

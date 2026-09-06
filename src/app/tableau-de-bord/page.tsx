@@ -4,13 +4,13 @@ import { createClient } from "@/lib/supabase/server";
 import { logout } from "@/app/auth/actions";
 import { respondToInvitation } from "@/app/tournois/actions";
 
-const NAV_ITEMS: { href: string; label: string; icon: string }[] = [
-  { href: "/evenements", label: "Évènement", icon: "📅" },
-  { href: "/tournois", label: "Tournois", icon: "♠" },
-  { href: "/clubs", label: "Mes clubs", icon: "🏛" },
-  { href: "/jetons", label: "Jeux de jetons", icon: "🎰" },
-  { href: "/structures", label: "Structures de blindes", icon: "⏱" },
-  { href: "/profil", label: "Mon profil", icon: "👤" },
+const NAV_ITEMS: { href: string; label: string; icon: string; tone: string }[] = [
+  { href: "/evenements", label: "Évènement", icon: "📅", tone: "accent" },
+  { href: "/tournois", label: "Tournois", icon: "♠", tone: "gold" },
+  { href: "/clubs", label: "Mes clubs", icon: "🏛", tone: "teal" },
+  { href: "/jetons", label: "Jeux de jetons", icon: "🎰", tone: "gold" },
+  { href: "/structures", label: "Structures de blindes", icon: "⏱", tone: "slate" },
+  { href: "/profil", label: "Mon profil", icon: "👤", tone: "success" },
 ];
 
 export default async function TableauDeBordPage() {
@@ -108,12 +108,8 @@ export default async function TableauDeBordPage() {
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
         {NAV_ITEMS.map((item) => (
-          <Link
-            key={item.href}
-            href={item.href}
-            className="card flex flex-col items-center gap-2 py-6 text-center transition-colors hover:border-ink-faint"
-          >
-            <span className="text-2xl">{item.icon}</span>
+          <Link key={item.href} href={item.href} className="tile">
+            <span className={`tile-icon tile-icon-${item.tone}`}>{item.icon}</span>
             <span className="text-sm font-medium">{item.label}</span>
           </Link>
         ))}

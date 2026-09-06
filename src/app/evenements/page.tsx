@@ -51,7 +51,7 @@ export default async function EvenementsPage() {
               <li key={e.id}>
                 <Link
                   href={`/evenements/${e.id}`}
-                  className="card flex items-center gap-3 transition-colors hover:border-ink-faint"
+                  className="card card-link flex items-center gap-3"
                 >
                   {e.logo_url ? (
                     // eslint-disable-next-line @next/next/no-img-element

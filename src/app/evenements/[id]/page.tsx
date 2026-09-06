@@ -154,7 +154,7 @@ export default async function EvenementPage({
                 <li key={t.id}>
                   <Link
                     href={`/tournois/${t.id}`}
-                    className="card flex items-center justify-between gap-3 transition-colors hover:border-ink-faint"
+                    className="card card-link flex items-center justify-between gap-3"
                   >
                     <div className="flex items-center gap-3">
                       {t.chip_image_url ? (

@@ -31,44 +31,57 @@ export default async function JoueurPage({
   if (!profile) notFound();
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-sm flex-col gap-6 px-4 py-12">
-      <div className="flex items-center gap-4">
+    <main className="page">
+      <div className="hero-card flex items-center gap-4">
         {profile.avatar_url ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={profile.avatar_url}
             alt={profile.pseudo}
-            className="h-20 w-20 rounded-full border border-line object-cover"
+            className="h-20 w-20 shrink-0 rounded-full border-2 object-cover"
+            style={{ borderColor: "var(--gold-line)" }}
           />
         ) : (
-          <div className="flex h-20 w-20 items-center justify-center rounded-full border border-line bg-surface-2 text-2xl font-medium text-ink-soft">
+          <div
+            className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full border-2 bg-surface-2 text-2xl font-medium text-ink-soft"
+            style={{ borderColor: "var(--gold-line)" }}
+          >
             {profile.pseudo.slice(0, 1).toUpperCase()}
           </div>
         )}
-        <div>
+        <div className="flex flex-col gap-2">
           <h1 className="text-2xl font-semibold">{profile.pseudo}</h1>
-          <p className="text-sm text-ink-soft">
-            {[profile.city, profile.age ? `${profile.age} ans` : null].filter(Boolean).join(" · ")}
-          </p>
+          {(profile.city || profile.age) && (
+            <div className="flex flex-wrap gap-2">
+              {profile.city && <span className="chip">📍 {profile.city}</span>}
+              {profile.age && <span className="chip">{profile.age} ans</span>}
+            </div>
+          )}
         </div>
       </div>
 
       {(profile.player_type || profile.player_type_custom) && (
-        <p className="text-sm">
-          <span className="font-medium">Type de joueur : </span>
-          {[
-            profile.player_type ? PLAYER_TYPE_LABELS[profile.player_type] ?? profile.player_type : null,
-            profile.player_type_custom,
-          ]
-            .filter(Boolean)
-            .join(" · ")}
-        </p>
+        <div className="card">
+          <p className="eyebrow mb-2">Type de joueur</p>
+          <p className="text-sm">
+            {[
+              profile.player_type
+                ? PLAYER_TYPE_LABELS[profile.player_type] ?? profile.player_type
+                : null,
+              profile.player_type_custom,
+            ]
+              .filter(Boolean)
+              .join(" · ")}
+          </p>
+        </div>
       )}
 
       {profile.bio && (
-        <p className="whitespace-pre-wrap text-sm text-ink-soft">
-          <FormattedText text={profile.bio} />
-        </p>
+        <div className="card">
+          <p className="whitespace-pre-wrap text-sm text-ink-soft">
+            <FormattedText text={profile.bio} />
+          </p>
+        </div>
       )}
 
       <Link href="/tournois" className="link text-sm">
