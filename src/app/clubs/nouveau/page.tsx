@@ -17,6 +17,7 @@ export default async function NouveauClubPage() {
       submitLabel="Créer le club"
       pendingLabel="Création..."
       cancelHref="/clubs"
+      userId={user.id}
     />
   );
 }

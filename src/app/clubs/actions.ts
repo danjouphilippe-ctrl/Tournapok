@@ -18,6 +18,7 @@ export type ClubRowInput = {
   description: string | null;
   location: string | null;
   logo_url: string | null;
+  banner_url: string | null;
   legal_form: string | null;
   phone: string | null;
   email: string | null;

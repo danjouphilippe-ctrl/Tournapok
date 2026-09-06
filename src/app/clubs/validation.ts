@@ -8,6 +8,7 @@ export function parseClubFields(formData: FormData): ParsedClubFields {
   const description = String(formData.get("description") ?? "").trim();
   const location = String(formData.get("location") ?? "").trim();
   const logoUrl = String(formData.get("logo_url") ?? "").trim();
+  const bannerUrl = String(formData.get("banner_url") ?? "").trim();
   const legalForm = String(formData.get("legal_form") ?? "").trim();
   const phone = String(formData.get("phone") ?? "").trim();
   const email = String(formData.get("email") ?? "").trim();
@@ -28,6 +29,7 @@ export function parseClubFields(formData: FormData): ParsedClubFields {
       description: description || null,
       location: location || null,
       logo_url: logoUrl || null,
+      banner_url: bannerUrl || null,
       legal_form: legalForm || null,
       phone: phone || null,
       email: email || null,

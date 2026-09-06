@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { useActionState } from "react";
 import type { ClubFormState } from "@/app/clubs/actions";
+import { ClubBannerPicker } from "@/components/ClubBannerPicker";
+import { ClubLogoPicker } from "@/components/ClubLogoPicker";
 
 const emptyState: ClubFormState = { error: null };
 
@@ -11,6 +13,7 @@ export type ClubFormValues = {
   description: string;
   location: string;
   logoUrl: string;
+  bannerUrl: string;
   legalForm: string;
   phone: string;
   email: string;
@@ -23,6 +26,7 @@ const defaultValues: ClubFormValues = {
   description: "",
   location: "",
   logoUrl: "",
+  bannerUrl: "",
   legalForm: "",
   phone: "",
   email: "",
@@ -37,6 +41,7 @@ export function ClubForm({
   pendingLabel,
   cancelHref,
   initial,
+  userId,
 }: {
   action: (state: ClubFormState, formData: FormData) => Promise<ClubFormState>;
   title: string;
@@ -44,6 +49,7 @@ export function ClubForm({
   pendingLabel: string;
   cancelHref: string;
   initial?: Partial<ClubFormValues>;
+  userId: string;
 }) {
   const values = { ...defaultValues, ...initial };
   const [state, formAction, pending] = useActionState(action, emptyState);
@@ -53,20 +59,24 @@ export function ClubForm({
       <h1 className="text-2xl font-semibold">{title}</h1>
 
       <form action={formAction} className="flex flex-col gap-6">
+        <Field label="Bannière (optionnel)">
+          <ClubBannerPicker userId={userId} initialValue={values.bannerUrl} />
+        </Field>
+
+        <Field label="Logo (optionnel)">
+          <ClubLogoPicker userId={userId} initialValue={values.logoUrl} />
+        </Field>
+
         <Field label="Nom du club">
           <input name="name" type="text" required defaultValue={values.name} className="input" />
         </Field>
 
-        <Field label="Description (optionnel)">
+        <Field label="Description / philosophie (optionnel)">
           <textarea name="description" rows={3} defaultValue={values.description} className="input" />
         </Field>
 
         <Field label="Lieu habituel (optionnel)">
           <input name="location" type="text" defaultValue={values.location} className="input" />
-        </Field>
-
-        <Field label="Logo (URL, optionnel)">
-          <input name="logo_url" type="url" defaultValue={values.logoUrl} className="input" />
         </Field>
 
         <Field label="Forme juridique (optionnel)">
