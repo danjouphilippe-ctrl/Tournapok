@@ -91,10 +91,17 @@ export async function rateStructure(structureId: string, rating: number) {
   } = await supabase.auth.getUser();
   if (!user) redirect("/connexion");
 
-  await supabase.from("blind_structure_ratings").upsert(
-    { structure_id: structureId, user_id: user.id, rating },
-    { onConflict: "structure_id,user_id" },
-  );
+  const { data, error } = await supabase
+    .from("blind_structure_ratings")
+    .upsert(
+      { structure_id: structureId, user_id: user.id, rating },
+      { onConflict: "structure_id,user_id" },
+    )
+    .select("id");
+
+  if (error || !data || data.length === 0) {
+    redirect(`/structures/${structureId}?erreur=${encodeURIComponent("Ta note n'a pas pu être enregistrée.")}`);
+  }
 
   revalidatePath(`/structures/${structureId}`);
 }

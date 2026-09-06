@@ -155,7 +155,16 @@ export async function removeEventCoAdmin(eventId: string, userId: string) {
   const access = await getEventAccess(supabase, eventId);
   if (!access?.isOwner) return;
 
-  await supabase.from("event_admins").delete().eq("event_id", eventId).eq("user_id", userId);
+  const { data, error } = await supabase
+    .from("event_admins")
+    .delete()
+    .eq("event_id", eventId)
+    .eq("user_id", userId)
+    .select("id");
+
+  if (error || !data || data.length === 0) {
+    redirect(`/evenements/${eventId}?erreur=${encodeURIComponent("Impossible de retirer ce co-administrateur.")}`);
+  }
 
   revalidatePath(`/evenements/${eventId}`);
 }

@@ -620,16 +620,30 @@ export async function startTournament(tournamentId: string) {
 
   const { data: tournament } = await supabase
     .from("tournaments")
-    .select("status")
+    .select("status, min_players")
     .eq("id", tournamentId)
     .single();
 
   if (!tournament || tournament.status !== "inscription") return;
 
+  const { count } = await supabase
+    .from("tournament_players")
+    .select("player_id", { count: "exact", head: true })
+    .eq("tournament_id", tournamentId)
+    .eq("status", "inscrit");
+
+  if (count === null || count < tournament.min_players) {
+    redirect(
+      `/tournois/${tournamentId}/tables?erreur=${encodeURIComponent(
+        "Il n'y a plus assez de joueurs inscrits pour démarrer — retourne à la page du tournoi pour vérifier.",
+      )}`,
+    );
+  }
+
   const firstLevel = await getLevel(supabase, tournamentId, 1);
   const durationSeconds = (firstLevel?.duration_minutes ?? 20) * 60;
 
-  await supabase
+  const { data, error } = await supabase
     .from("tournaments")
     .update({
       status: "en_cours",
@@ -639,7 +653,14 @@ export async function startTournament(tournamentId: string) {
       level_ends_at: new Date(Date.now() + durationSeconds * 1000).toISOString(),
       paused_remaining_seconds: null,
     })
-    .eq("id", tournamentId);
+    .eq("id", tournamentId)
+    .select("id");
+
+  if (error || !data || data.length === 0) {
+    redirect(
+      `/tournois/${tournamentId}/tables?erreur=${encodeURIComponent("Impossible de démarrer le tournoi.")}`,
+    );
+  }
 
   revalidatePath(`/tournois/${tournamentId}`);
   revalidatePath(`/tournois/${tournamentId}/tables`);
@@ -662,14 +683,19 @@ export async function pauseClock(tournamentId: string) {
     Math.round((new Date(tournament.level_ends_at).getTime() - Date.now()) / 1000),
   );
 
-  await supabase
+  const { data, error } = await supabase
     .from("tournaments")
     .update({
       clock_status: "paused",
       paused_remaining_seconds: remaining,
       level_ends_at: null,
     })
-    .eq("id", tournamentId);
+    .eq("id", tournamentId)
+    .select("id");
+
+  if (error || !data || data.length === 0) {
+    redirect(`/tournois/${tournamentId}?erreur=${encodeURIComponent("Impossible de mettre le tournoi en pause.")}`);
+  }
 
   revalidatePath(`/tournois/${tournamentId}`);
 }
@@ -688,14 +714,19 @@ export async function resumeClock(tournamentId: string) {
 
   const remaining = tournament.paused_remaining_seconds ?? 0;
 
-  await supabase
+  const { data, error } = await supabase
     .from("tournaments")
     .update({
       clock_status: "running",
       level_ends_at: new Date(Date.now() + remaining * 1000).toISOString(),
       paused_remaining_seconds: null,
     })
-    .eq("id", tournamentId);
+    .eq("id", tournamentId)
+    .select("id");
+
+  if (error || !data || data.length === 0) {
+    redirect(`/tournois/${tournamentId}?erreur=${encodeURIComponent("Impossible de reprendre le tournoi.")}`);
+  }
 
   revalidatePath(`/tournois/${tournamentId}`);
 }
@@ -708,7 +739,7 @@ async function setLevelPaused(
   const level = await getLevel(supabase, tournamentId, newLevel);
   const durationSeconds = (level?.duration_minutes ?? 20) * 60;
 
-  await supabase
+  const { data, error } = await supabase
     .from("tournaments")
     .update({
       current_level: newLevel,
@@ -716,7 +747,12 @@ async function setLevelPaused(
       level_ends_at: null,
       paused_remaining_seconds: durationSeconds,
     })
-    .eq("id", tournamentId);
+    .eq("id", tournamentId)
+    .select("id");
+
+  if (error || !data || data.length === 0) {
+    redirect(`/tournois/${tournamentId}?erreur=${encodeURIComponent("Impossible de changer de niveau.")}`);
+  }
 }
 
 export async function nextLevel(tournamentId: string) {
@@ -899,14 +935,19 @@ export async function rebuyPlayer(
     };
   }
 
-  await supabase
+  const { data, error } = await supabase
     .from("tournament_players")
     .update({
       stack: (player.stack ?? 0) + (tournament.rebuy_chips ?? 0),
       rebuys_count: player.rebuys_count + 1,
     })
     .eq("tournament_id", tournamentId)
-    .eq("player_id", playerId);
+    .eq("player_id", playerId)
+    .select("player_id");
+
+  if (error || !data || data.length === 0) {
+    return { error: "La recave n'a pas pu être enregistrée." };
+  }
 
   revalidatePath(`/tournois/${tournamentId}`);
   return {};
@@ -948,14 +989,19 @@ export async function addOnPlayer(
     };
   }
 
-  await supabase
+  const { data, error } = await supabase
     .from("tournament_players")
     .update({
       stack: (player.stack ?? 0) + (tournament.addon_chips ?? 0),
       addon_used: true,
     })
     .eq("tournament_id", tournamentId)
-    .eq("player_id", playerId);
+    .eq("player_id", playerId)
+    .select("player_id");
+
+  if (error || !data || data.length === 0) {
+    return { error: "L'add-on n'a pas pu être enregistré." };
+  }
 
   revalidatePath(`/tournois/${tournamentId}`);
   return {};
@@ -1013,7 +1059,7 @@ export async function eliminatePlayer(
   const eliminated = players.find((p) => p.player_id === playerId);
   if (!eliminated || eliminated.status !== "inscrit") return;
 
-  await supabase
+  const { data: eliminatedRows, error: eliminateError } = await supabase
     .from("tournament_players")
     .update({
       status: "elimine",
@@ -1022,7 +1068,12 @@ export async function eliminatePlayer(
       eliminated_by: eliminatedById,
     })
     .eq("tournament_id", tournamentId)
-    .eq("player_id", playerId);
+    .eq("player_id", playerId)
+    .select("player_id");
+
+  if (eliminateError || !eliminatedRows || eliminatedRows.length === 0) {
+    redirect(`/tournois/${tournamentId}?erreur=${encodeURIComponent("L'élimination n'a pas pu être enregistrée.")}`);
+  }
 
   if (tournament.bounty_enabled && eliminatedById && eliminated) {
     const eliminator = players.find((p) => p.player_id === eliminatedById);
@@ -1125,11 +1176,16 @@ export async function removeCoAdmin(tournamentId: string, userId: string) {
   const access = await getManageAccess(supabase, tournamentId);
   if (!access?.isOwner) return;
 
-  await supabase
+  const { data, error } = await supabase
     .from("tournament_admins")
     .delete()
     .eq("tournament_id", tournamentId)
-    .eq("user_id", userId);
+    .eq("user_id", userId)
+    .select("id");
+
+  if (error || !data || data.length === 0) {
+    redirect(`/tournois/${tournamentId}?erreur=${encodeURIComponent("Impossible de retirer ce co-administrateur.")}`);
+  }
 
   revalidatePath(`/tournois/${tournamentId}`);
 }

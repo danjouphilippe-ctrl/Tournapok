@@ -19,10 +19,13 @@ function getPseudo(s: { profiles: { pseudo: string }[] | { pseudo: string } | nu
 
 export default async function StructureDetailPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ erreur?: string }>;
 }) {
   const { id } = await params;
+  const { erreur } = await searchParams;
   const supabase = await createClient();
   const {
     data: { user },
@@ -58,6 +61,12 @@ export default async function StructureDetailPage({
 
   return (
     <main className="page">
+      {erreur && (
+        <p className="card text-sm text-danger" role="alert">
+          {erreur}
+        </p>
+      )}
+
       <div>
         <h1 className="text-2xl font-semibold">{structure.name}</h1>
         <p className="text-sm text-ink-soft">

@@ -11,10 +11,13 @@ function getPseudo(p: { profiles: { pseudo: string; avatar_url: string | null }[
 
 export default async function TablesPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ erreur?: string }>;
 }) {
   const { id } = await params;
+  const { erreur } = await searchParams;
   const supabase = await createClient();
   const {
     data: { user },
@@ -51,6 +54,12 @@ export default async function TablesPage({
 
   return (
     <main className="mx-auto flex min-h-screen max-w-5xl flex-col gap-6 px-4 py-12">
+      {erreur && (
+        <p className="card text-sm text-danger" role="alert">
+          {erreur}
+        </p>
+      )}
+
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h1 className="text-2xl font-semibold">Tables — {tournament.name}</h1>
         <Link href={`/tournois/${id}`} className="link text-sm">
