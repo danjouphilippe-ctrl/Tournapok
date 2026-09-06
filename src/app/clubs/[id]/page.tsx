@@ -5,6 +5,8 @@ import {
   addClubMember,
   changeClubMemberRole,
   removeClubMember,
+  requestToJoinClub,
+  respondToClubJoinRequest,
 } from "@/app/clubs/actions";
 import { DeleteClubButton } from "@/components/DeleteClubButton";
 import { PseudoAutocomplete } from "@/components/PseudoAutocomplete";
@@ -41,7 +43,7 @@ export default async function ClubPage({
   const { data: club } = await supabase.from("clubs").select("*").eq("id", id).single();
   if (!club) notFound();
 
-  const [{ data: organizer }, { data: members }, { data: tournaments }, { data: events }] =
+  const [{ data: organizer }, { data: members }, { data: tournaments }, { data: events }, { data: joinRequests }] =
     await Promise.all([
       supabase.from("profiles").select("pseudo").eq("id", club.created_by).single(),
       supabase
@@ -59,12 +61,19 @@ export default async function ClubPage({
         .select("id, name, visibility")
         .eq("club_id", id)
         .order("created_at", { ascending: false }),
+      supabase
+        .from("club_join_requests")
+        .select("id, requester_id, status, profiles!club_join_requests_requester_id_fkey(pseudo)")
+        .eq("club_id", id)
+        .eq("status", "pending"),
     ]);
 
   const allMembers = members ?? [];
   const myMembership = allMembers.find((m) => m.user_id === user.id);
   const isOwner = club.created_by === user.id;
   const canManage = isOwner || myMembership?.role === "owner" || myMembership?.role === "admin";
+  const pendingRequests = joinRequests ?? [];
+  const myRequest = pendingRequests.find((r) => r.requester_id === user.id);
 
   return (
     <main className="page">
@@ -92,7 +101,58 @@ export default async function ClubPage({
       <p className="text-sm text-ink-soft">
         Créé par {organizer?.pseudo ?? "—"}
         {club.location && ` · 📍 ${club.location}`}
+        {" · "}
+        {club.visibility === "public" ? "Club public" : "Club privé"}
       </p>
+
+      {(club.legal_form || club.phone || club.email || club.address) && (
+        <div className="card flex flex-col gap-1 text-sm text-ink-soft">
+          <p className="eyebrow mb-1">Coordonnées</p>
+          {club.legal_form && <p>{club.legal_form}</p>}
+          {club.address && <p>📍 {club.address}</p>}
+          {club.phone && <p>☎ {club.phone}</p>}
+          {club.email && <p>✉ {club.email}</p>}
+        </div>
+      )}
+
+      {club.visibility === "public" && !myMembership && (
+        <div className="card">
+          {myRequest ? (
+            <p className="text-sm text-ink-soft">
+              Demande envoyée, en attente de validation par l&apos;organisateur.
+            </p>
+          ) : (
+            <form action={requestToJoinClub.bind(null, id)}>
+              <button type="submit" className="btn btn-primary w-full">
+                Demander à adhérer
+              </button>
+            </form>
+          )}
+        </div>
+      )}
+
+      {canManage && pendingRequests.length > 0 && (
+        <div className="card flex flex-col gap-2">
+          <h2 className="font-semibold">Demandes d&apos;adhésion en attente</h2>
+          {pendingRequests.map((r) => (
+            <div key={r.id} className="flex items-center justify-between text-sm">
+              <span>{getPseudo(r)}</span>
+              <div className="flex gap-2">
+                <form action={respondToClubJoinRequest.bind(null, r.id, true)}>
+                  <button type="submit" className="link">
+                    Approuver
+                  </button>
+                </form>
+                <form action={respondToClubJoinRequest.bind(null, r.id, false)}>
+                  <button type="submit" className="link-danger">
+                    Refuser
+                  </button>
+                </form>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
 
       {(tournaments && tournaments.length > 0) || (events && events.length > 0) ? (
         <div className="card flex flex-col gap-3">

@@ -2,17 +2,29 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 
-export default async function ClubsPage() {
+export default async function ClubsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ q?: string }>;
+}) {
+  const { q } = await searchParams;
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) redirect("/connexion");
 
-  const { data: clubs } = await supabase
+  let query = supabase
     .from("clubs")
-    .select("id, name, description, location, logo_url, created_by")
-    .order("created_at", { ascending: false });
+    .select("id, name, description, location, address, logo_url, created_by");
+
+  const term = q?.trim();
+  if (term) {
+    const pattern = `%${term}%`;
+    query = query.or(`name.ilike.${pattern},location.ilike.${pattern},address.ilike.${pattern}`);
+  }
+
+  const { data: clubs } = await query.order("created_at", { ascending: false });
 
   const creatorIds = [...new Set((clubs ?? []).map((c) => c.created_by))];
   const { data: creators } = await supabase
@@ -40,8 +52,23 @@ export default async function ClubsPage() {
         </Link>
       </div>
 
+      <form className="flex gap-2">
+        <input
+          type="text"
+          name="q"
+          defaultValue={term ?? ""}
+          placeholder="Rechercher un club (nom, lieu, adresse)"
+          className="input"
+        />
+        <button type="submit" className="btn btn-secondary btn-sm">
+          Rechercher
+        </button>
+      </form>
+
       {!clubs || clubs.length === 0 ? (
-        <p className="text-sm text-ink-soft">Aucun club pour l&apos;instant.</p>
+        <p className="text-sm text-ink-soft">
+          {term ? "Aucun club ne correspond à cette recherche." : "Aucun club pour l'instant."}
+        </p>
       ) : (
         <ul className="flex flex-col gap-3">
           {clubs.map((c) => {

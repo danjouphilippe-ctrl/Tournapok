@@ -11,6 +11,11 @@ export type ClubFormValues = {
   description: string;
   location: string;
   logoUrl: string;
+  legalForm: string;
+  phone: string;
+  email: string;
+  address: string;
+  visibility: string;
 };
 
 const defaultValues: ClubFormValues = {
@@ -18,6 +23,11 @@ const defaultValues: ClubFormValues = {
   description: "",
   location: "",
   logoUrl: "",
+  legalForm: "",
+  phone: "",
+  email: "",
+  address: "",
+  visibility: "private",
 };
 
 export function ClubForm({
@@ -57,6 +67,35 @@ export function ClubForm({
 
         <Field label="Logo (URL, optionnel)">
           <input name="logo_url" type="url" defaultValue={values.logoUrl} className="input" />
+        </Field>
+
+        <Field label="Forme juridique (optionnel)">
+          <input
+            name="legal_form"
+            type="text"
+            placeholder="Ex: Association loi 1901"
+            defaultValue={values.legalForm}
+            className="input"
+          />
+        </Field>
+
+        <Field label="Téléphone (optionnel)">
+          <input name="phone" type="tel" defaultValue={values.phone} className="input" />
+        </Field>
+
+        <Field label="Email (optionnel)">
+          <input name="email" type="email" defaultValue={values.email} className="input" />
+        </Field>
+
+        <Field label="Adresse (optionnel)">
+          <input name="address" type="text" defaultValue={values.address} className="input" />
+        </Field>
+
+        <Field label="Visibilité">
+          <select name="visibility" defaultValue={values.visibility} className="input">
+            <option value="private">Privé — sur invitation uniquement</option>
+            <option value="public">Public — les joueurs peuvent demander à adhérer</option>
+          </select>
         </Field>
 
         {state.error && (

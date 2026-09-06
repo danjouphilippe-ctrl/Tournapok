@@ -14,7 +14,17 @@ describe("parseClubFields", () => {
     const result = parseClubFields(formData({ name: "Cucumber Club" }));
     expect(result).toEqual({
       ok: true,
-      row: { name: "Cucumber Club", description: null, location: null, logo_url: null },
+      row: {
+        name: "Cucumber Club",
+        description: null,
+        location: null,
+        logo_url: null,
+        legal_form: null,
+        phone: null,
+        email: null,
+        address: null,
+        visibility: "private",
+      },
     });
   });
 
@@ -35,6 +45,11 @@ describe("parseClubFields", () => {
         description: "Un club de test",
         location: "Pornic",
         logo_url: "https://example.com/logo.png",
+        legal_form: "Association loi 1901",
+        phone: "0600000000",
+        email: "club@example.com",
+        address: "1 rue du Test, 44210 Pornic",
+        visibility: "public",
       }),
     );
     expect(result).toEqual({
@@ -44,7 +59,17 @@ describe("parseClubFields", () => {
         description: "Un club de test",
         location: "Pornic",
         logo_url: "https://example.com/logo.png",
+        legal_form: "Association loi 1901",
+        phone: "0600000000",
+        email: "club@example.com",
+        address: "1 rue du Test, 44210 Pornic",
+        visibility: "public",
       },
     });
+  });
+
+  it("rejects an invalid visibility value", () => {
+    const result = parseClubFields(formData({ name: "Cucumber Club", visibility: "club" }));
+    expect(result).toEqual({ ok: false, error: "Visibilité invalide." });
   });
 });

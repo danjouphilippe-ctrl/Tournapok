@@ -40,6 +40,11 @@ export default async function ModifierClubPage({
         description: club.description ?? "",
         location: club.location ?? "",
         logoUrl: club.logo_url ?? "",
+        legalForm: club.legal_form ?? "",
+        phone: club.phone ?? "",
+        email: club.email ?? "",
+        address: club.address ?? "",
+        visibility: club.visibility,
       }}
     />
   );

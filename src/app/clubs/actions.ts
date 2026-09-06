@@ -18,6 +18,11 @@ export type ClubRowInput = {
   description: string | null;
   location: string | null;
   logo_url: string | null;
+  legal_form: string | null;
+  phone: string | null;
+  email: string | null;
+  address: string | null;
+  visibility: string;
 };
 
 export type ParsedClubFields = { ok: false; error: string } | { ok: true; row: ClubRowInput };
@@ -162,6 +167,48 @@ export async function changeClubMemberRole(clubId: string, userId: string, formD
     .eq("user_id", userId);
 
   revalidatePath(`/clubs/${clubId}`);
+}
+
+export async function requestToJoinClub(clubId: string) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) redirect("/connexion");
+
+  await supabase.from("club_join_requests").insert({ club_id: clubId, requester_id: user.id });
+
+  revalidatePath(`/clubs/${clubId}`);
+}
+
+export async function respondToClubJoinRequest(requestId: string, approve: boolean) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) redirect("/connexion");
+
+  const { data: request } = await supabase
+    .from("club_join_requests")
+    .select("club_id, requester_id, status")
+    .eq("id", requestId)
+    .single();
+
+  if (!request || request.status !== "pending") return;
+
+  if (approve) {
+    const { error } = await supabase
+      .from("club_members")
+      .insert({ club_id: request.club_id, user_id: request.requester_id, added_by: user.id });
+    if (error) {
+      redirect(`/clubs/${request.club_id}?erreur=${encodeURIComponent(error.message)}`);
+    }
+    await supabase.from("club_join_requests").update({ status: "approved" }).eq("id", requestId);
+  } else {
+    await supabase.from("club_join_requests").update({ status: "rejected" }).eq("id", requestId);
+  }
+
+  revalidatePath(`/clubs/${request.club_id}`);
 }
 
 export async function removeClubMember(clubId: string, userId: string) {
