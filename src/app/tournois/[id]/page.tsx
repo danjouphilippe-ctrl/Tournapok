@@ -60,6 +60,14 @@ function getPseudo(p: { profiles: { pseudo: string }[] | { pseudo: string } | nu
   return Array.isArray(profiles) ? (profiles[0]?.pseudo ?? "Joueur") : profiles.pseudo;
 }
 
+function getAvatarUrl(p: {
+  profiles: { avatar_url: string | null }[] | { avatar_url: string | null } | null;
+}) {
+  const profiles = p.profiles;
+  if (!profiles) return null;
+  return Array.isArray(profiles) ? (profiles[0]?.avatar_url ?? null) : profiles.avatar_url;
+}
+
 function getEliminatorPseudo(p: { eliminator: { pseudo: string }[] | { pseudo: string } | null }) {
   const eliminator = p.eliminator;
   if (!eliminator) return null;
@@ -110,7 +118,7 @@ export default async function TournoiPage({
     supabase
       .from("tournament_players")
       .select(
-        "player_id, status, place, stack, rebuys_count, addon_used, bounty_cash_won, buy_in_paid, eliminated_by, profiles!tournament_players_player_id_fkey(pseudo), eliminator:profiles!tournament_players_eliminated_by_fkey(pseudo)",
+        "player_id, status, place, stack, rebuys_count, addon_used, bounty_cash_won, buy_in_paid, eliminated_by, profiles!tournament_players_player_id_fkey(pseudo, avatar_url), eliminator:profiles!tournament_players_eliminated_by_fkey(pseudo)",
       )
       .eq("tournament_id", id),
     supabase
@@ -579,8 +587,20 @@ export default async function TournoiPage({
           {active.map((p) => (
             <li key={p.player_id} className="card flex flex-col gap-2 py-3">
               <div className="flex items-center justify-between">
-                <Link href={`/joueurs/${p.player_id}`} className="link font-medium">
-                  {getPseudo(p)}
+                <Link href={`/joueurs/${p.player_id}`} className="flex items-center gap-2">
+                  {getAvatarUrl(p) ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={getAvatarUrl(p)!}
+                      alt=""
+                      className="h-8 w-8 shrink-0 rounded-full border border-line object-cover"
+                    />
+                  ) : (
+                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-line bg-surface-2 text-xs font-medium text-ink-soft">
+                      {getPseudo(p).slice(0, 1).toUpperCase()}
+                    </span>
+                  )}
+                  <span className="link font-medium">{getPseudo(p)}</span>
                 </Link>
                 <span className="text-sm text-ink-soft">
                   {p.stack ?? tournament.starting_stack} jetons
@@ -681,13 +701,25 @@ export default async function TournoiPage({
               return (
                 <li key={p.player_id} className="card flex flex-col gap-1 py-2.5">
                   <div className="flex items-center justify-between">
-                    <span>
-                      #{p.place}{" "}
-                      <Link href={`/joueurs/${p.player_id}`} className="link">
-                        {getPseudo(p)}
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm text-ink-faint">#{p.place}</span>
+                      <Link href={`/joueurs/${p.player_id}`} className="flex items-center gap-2">
+                        {getAvatarUrl(p) ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img
+                            src={getAvatarUrl(p)!}
+                            alt=""
+                            className="h-7 w-7 shrink-0 rounded-full border border-line object-cover"
+                          />
+                        ) : (
+                          <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-line bg-surface-2 text-xs font-medium text-ink-soft">
+                            {getPseudo(p).slice(0, 1).toUpperCase()}
+                          </span>
+                        )}
+                        <span className="link">{getPseudo(p)}</span>
                       </Link>
-                      {p.status === "vainqueur" && <span> 🏆</span>}
-                    </span>
+                      {p.status === "vainqueur" && <span>🏆</span>}
+                    </div>
                     <span className="text-sm text-ink-soft">
                       Investi {cost}€{gain > 0 ? ` · Gagné ${gain}€` : ""}
                     </span>
