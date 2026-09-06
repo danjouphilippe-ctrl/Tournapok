@@ -4,6 +4,15 @@ import { createClient } from "@/lib/supabase/server";
 import { logout } from "@/app/auth/actions";
 import { respondToInvitation } from "@/app/tournois/actions";
 
+const NAV_ITEMS: { href: string; label: string; icon: string }[] = [
+  { href: "/evenements", label: "Évènement", icon: "📅" },
+  { href: "/tournois", label: "Tournois", icon: "♠" },
+  { href: "/clubs", label: "Mes clubs", icon: "🏛" },
+  { href: "/jetons", label: "Jeux de jetons", icon: "🎰" },
+  { href: "/structures", label: "Structures de blindes", icon: "⏱" },
+  { href: "/profil", label: "Mon profil", icon: "👤" },
+];
+
 export default async function TableauDeBordPage() {
   const supabase = await createClient();
   const {
@@ -28,17 +37,21 @@ export default async function TableauDeBordPage() {
   const pendingInvitations = invitations ?? [];
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-sm flex-col justify-center gap-6 px-4 py-12">
-      <div className="flex items-center gap-3">
+    <main className="page">
+      <div className="hero-card flex items-center gap-4">
         {profile?.avatar_url ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={profile.avatar_url}
             alt={profile.pseudo}
-            className="h-12 w-12 rounded-full border border-line object-cover"
+            className="h-14 w-14 shrink-0 rounded-full border-2 object-cover"
+            style={{ borderColor: "var(--gold-line)" }}
           />
         ) : (
-          <div className="flex h-12 w-12 items-center justify-center rounded-full border border-line bg-surface-2 text-lg font-medium text-ink-soft">
+          <div
+            className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full border-2 bg-surface-2 text-xl font-medium text-ink-soft"
+            style={{ borderColor: "var(--gold-line)" }}
+          >
             {(profile?.pseudo ?? user.email ?? "?").slice(0, 1).toUpperCase()}
           </div>
         )}
@@ -49,8 +62,11 @@ export default async function TableauDeBordPage() {
       </div>
 
       {pendingInvitations.length > 0 && (
-        <div className="card flex flex-col gap-4">
-          <h2 className="font-semibold">Invitations reçues</h2>
+        <div className="card section-accent flex flex-col gap-4">
+          <p className="section-eyebrow">
+            <span className="dot" />
+            Invitations reçues
+          </p>
           {pendingInvitations.map((inv) => {
             const t = Array.isArray(inv.tournaments) ? inv.tournaments[0] : inv.tournaments;
             if (!t) return null;
@@ -90,33 +106,24 @@ export default async function TableauDeBordPage() {
         </div>
       )}
 
-      <div className="flex flex-col gap-3">
-        <Link href="/evenements" className="btn btn-primary">
-          Voir les évènements
-        </Link>
-
-        <Link href="/tournois" className="btn btn-secondary">
-          Voir les tournois
-        </Link>
-
-        <Link href="/clubs" className="btn btn-secondary">
-          Mes clubs
-        </Link>
-
-        <Link href="/structures" className="btn btn-secondary">
-          Structures de blindes
-        </Link>
-
-        <Link href="/profil" className="btn btn-secondary">
-          Mon profil
-        </Link>
-
-        <form action={logout}>
-          <button type="submit" className="btn btn-secondary w-full">
-            Se déconnecter
-          </button>
-        </form>
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+        {NAV_ITEMS.map((item) => (
+          <Link
+            key={item.href}
+            href={item.href}
+            className="card flex flex-col items-center gap-2 py-6 text-center transition-colors hover:border-ink-faint"
+          >
+            <span className="text-2xl">{item.icon}</span>
+            <span className="text-sm font-medium">{item.label}</span>
+          </Link>
+        ))}
       </div>
+
+      <form action={logout} className="flex justify-center">
+        <button type="submit" className="link text-sm">
+          Se déconnecter
+        </button>
+      </form>
     </main>
   );
 }
