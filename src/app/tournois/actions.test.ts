@@ -195,4 +195,73 @@ describe("parseTournamentFields", () => {
     );
     expect(result.ok).toBe(true);
   });
+
+  it("ignores the chip rack entirely when no chip set is chosen", () => {
+    const result = parseTournamentFields(
+      validFormData({ chip_set_id: "", chip_rack_json: "not json" }),
+    );
+    expect(result.ok).toBe(true);
+    if (result.ok) expect(result.chipRack).toEqual([]);
+  });
+
+  it("rejects invalid JSON in the chip rack field once a chip set is chosen", () => {
+    const result = parseTournamentFields(
+      validFormData({ chip_set_id: "some-chip-set-id", chip_rack_json: "not json" }),
+    );
+    expect(result).toEqual({ ok: false, error: "La composition de la cave de départ est invalide." });
+  });
+
+  it("rejects a chip rack entry with a non-positive quantity", () => {
+    const result = parseTournamentFields(
+      validFormData({
+        chip_set_id: "some-chip-set-id",
+        chip_rack_json: JSON.stringify([{ denominationId: "d1", value: 10000, quantity: 0 }]),
+      }),
+    );
+    expect(result).toEqual({ ok: false, error: "Chaque quantité de jetons doit être positive." });
+  });
+
+  it("rejects the same denomination appearing twice in the chip rack", () => {
+    const result = parseTournamentFields(
+      validFormData({
+        chip_set_id: "some-chip-set-id",
+        chip_rack_json: JSON.stringify([
+          { denominationId: "d1", value: 5000, quantity: 1 },
+          { denominationId: "d1", value: 5000, quantity: 1 },
+        ]),
+      }),
+    );
+    expect(result).toEqual({
+      ok: false,
+      error: "Chaque dénomination ne peut apparaître qu'une seule fois dans la cave.",
+    });
+  });
+
+  it("rejects a chip rack that doesn't total the starting stack", () => {
+    const result = parseTournamentFields(
+      validFormData({
+        chip_set_id: "some-chip-set-id",
+        chip_rack_json: JSON.stringify([{ denominationId: "d1", value: 100, quantity: 5 }]),
+      }),
+    );
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.error).toContain("10000");
+  });
+
+  it("accepts a chip rack that exactly totals the starting stack", () => {
+    const result = parseTournamentFields(
+      validFormData({
+        starting_stack: "1000",
+        chip_set_id: "some-chip-set-id",
+        chip_rack_json: JSON.stringify([
+          { denominationId: "d1", value: 10, quantity: 10 },
+          { denominationId: "d2", value: 25, quantity: 4 },
+          { denominationId: "d3", value: 100, quantity: 3 },
+          { denominationId: "d4", value: 500, quantity: 1 },
+        ]),
+      }),
+    );
+    expect(result.ok).toBe(true);
+    if (result.ok) expect(result.chipRack).toHaveLength(4);
+  });
 });

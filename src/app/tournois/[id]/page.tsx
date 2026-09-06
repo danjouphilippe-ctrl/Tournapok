@@ -64,6 +64,14 @@ function getEliminatorPseudo(p: { eliminator: { pseudo: string }[] | { pseudo: s
   return Array.isArray(eliminator) ? (eliminator[0]?.pseudo ?? null) : eliminator.pseudo;
 }
 
+function getDenomination(r: {
+  chip_denominations: { color: string; value: number }[] | { color: string; value: number } | null;
+}) {
+  const d = r.chip_denominations;
+  if (!d) return { color: "?", value: 0 };
+  return Array.isArray(d) ? (d[0] ?? { color: "?", value: 0 }) : d;
+}
+
 export default async function TournoiPage({
   params,
   searchParams,
@@ -95,6 +103,7 @@ export default async function TournoiPage({
     { data: payouts },
     { data: invitations },
     { data: joinRequests },
+    { data: chipRack },
   ] = await Promise.all([
     supabase
       .from("tournament_players")
@@ -127,7 +136,15 @@ export default async function TournoiPage({
       .select("id, requester_id, status, profiles!tournament_join_requests_requester_id_fkey(pseudo)")
       .eq("tournament_id", id)
       .eq("status", "pending"),
+    supabase
+      .from("tournament_chip_rack")
+      .select("quantity, chip_denominations(color, value)")
+      .eq("tournament_id", id),
   ]);
+
+  const { data: chipSet } = tournament.chip_set_id
+    ? await supabase.from("chip_sets").select("name").eq("id", tournament.chip_set_id).single()
+    : { data: null };
 
   const { data: parentEvent } = tournament.event_id
     ? await supabase.from("events").select("id, name").eq("id", tournament.event_id).single()
@@ -658,6 +675,22 @@ export default async function TournoiPage({
               </tbody>
             </table>
           </div>
+        </div>
+      )}
+
+      {chipRack && chipRack.length > 0 && (
+        <div>
+          <h2 className="mb-2 font-semibold">Jetons en jeu{chipSet ? ` — ${chipSet.name}` : ""}</h2>
+          <ul className="card flex flex-wrap gap-2 text-sm">
+            {chipRack
+              .map((r) => ({ quantity: r.quantity, ...getDenomination(r) }))
+              .sort((a, b) => a.value - b.value)
+              .map((r, i) => (
+                <li key={i} className="badge">
+                  {r.quantity} × {r.color} ({r.value})
+                </li>
+              ))}
+          </ul>
         </div>
       )}
 

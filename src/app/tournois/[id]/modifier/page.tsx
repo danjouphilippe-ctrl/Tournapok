@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { updateTournament } from "@/app/tournois/actions";
 import { TournoiForm, type TournoiFormValues } from "@/components/TournoiForm";
 import { getManagedClubOptions } from "@/lib/clubOptions";
+import { getChipSetOptions } from "@/lib/chipSetOptions";
 
 export default async function ModifierTournoiPage({
   params,
@@ -36,7 +37,7 @@ export default async function ModifierTournoiPage({
     redirect(`/tournois/${id}`);
   }
 
-  const [{ data: structures }, { data: stats }, { data: blindLevels }, { data: payouts }] =
+  const [{ data: structures }, { data: stats }, { data: blindLevels }, { data: payouts }, { data: rackRows }, chipSetOptions] =
     await Promise.all([
       supabase.from("blind_structures").select("id, name, speed_preset").order("created_at", { ascending: false }),
       supabase.from("blind_structure_stats").select("structure_id, avg_rating, ratings_count"),
@@ -50,7 +51,22 @@ export default async function ModifierTournoiPage({
         .select("place, percentage")
         .eq("tournament_id", id)
         .order("place"),
+      supabase
+        .from("tournament_chip_rack")
+        .select("denomination_id, quantity")
+        .eq("tournament_id", id),
+      getChipSetOptions(supabase),
     ]);
+
+  const selectedChipSet = chipSetOptions.find((s) => s.id === tournament.chip_set_id);
+  const chipRack = (rackRows ?? []).map((r) => {
+    const denomination = selectedChipSet?.denominations.find((d) => d.id === r.denomination_id);
+    return {
+      denominationId: r.denomination_id,
+      value: denomination?.value ?? 0,
+      quantity: r.quantity,
+    };
+  });
 
   const statsById = new Map((stats ?? []).map((s) => [s.structure_id, s]));
   const structureOptions = (structures ?? []).map((s) => {
@@ -91,6 +107,8 @@ export default async function ModifierTournoiPage({
     payouts: (payouts ?? []).map((p) => ({ place: p.place, percentage: p.percentage })),
     blindStructureId: tournament.blind_structure_id ?? "",
     chipImageUrl: tournament.chip_image_url ?? "",
+    chipSetId: tournament.chip_set_id ?? "",
+    chipRack,
     customLevels: (blindLevels ?? []).map((l) => ({
       levelNumber: l.level_number,
       isBreak: l.is_break,
@@ -108,6 +126,7 @@ export default async function ModifierTournoiPage({
   return (
     <TournoiForm
       structureOptions={structureOptions}
+      chipSetOptions={chipSetOptions}
       clubOptions={clubOptions}
       action={updateTournament.bind(null, id)}
       title="Modifier le tournoi"

@@ -1,5 +1,5 @@
 import type { StructureLevelInput } from "@/app/structures/actions";
-import type { ParsedTournamentFields, PayoutInput } from "./actions";
+import type { ChipRackEntryInput, ParsedTournamentFields, PayoutInput } from "./actions";
 
 function numberOrNull(formData: FormData, key: string): number | null {
   const raw = formData.get(key);
@@ -47,6 +47,8 @@ export function parseTournamentFields(formData: FormData): ParsedTournamentField
   const blindStructureId = String(formData.get("blind_structure_id") ?? "") || null;
   const customLevelsRaw = String(formData.get("custom_levels_json") ?? "[]");
   const chipImageUrl = String(formData.get("chip_image_url") ?? "").trim() || null;
+  const chipSetId = String(formData.get("chip_set_id") ?? "").trim() || null;
+  const chipRackRaw = String(formData.get("chip_rack_json") ?? "[]");
   const clubId = String(formData.get("club_id") ?? "").trim() || null;
   const visibility = String(formData.get("visibility") ?? "private");
 
@@ -123,6 +125,30 @@ export function parseTournamentFields(formData: FormData): ParsedTournamentField
     }
   }
 
+  let chipRack: ChipRackEntryInput[] = [];
+  if (chipSetId) {
+    try {
+      chipRack = JSON.parse(chipRackRaw);
+    } catch {
+      return { ok: false, error: "La composition de la cave de départ est invalide." };
+    }
+    if (!Array.isArray(chipRack)) chipRack = [];
+    if (chipRack.some((c) => c.quantity <= 0)) {
+      return { ok: false, error: "Chaque quantité de jetons doit être positive." };
+    }
+    const denominationIds = chipRack.map((c) => c.denominationId);
+    if (new Set(denominationIds).size !== denominationIds.length) {
+      return { ok: false, error: "Chaque dénomination ne peut apparaître qu'une seule fois dans la cave." };
+    }
+    const chipTotal = chipRack.reduce((sum, c) => sum + c.value * c.quantity, 0);
+    if (chipTotal !== startingStack) {
+      return {
+        ok: false,
+        error: `La composition de la cave doit totaliser le tapis de départ (${startingStack}, actuellement ${chipTotal}).`,
+      };
+    }
+  }
+
   return {
     ok: true,
     payouts,
@@ -155,10 +181,12 @@ export function parseTournamentFields(formData: FormData): ParsedTournamentField
       payout_places: payouts.length > 0 ? payouts.length : null,
       blind_structure_id: blindStructureId,
       chip_image_url: chipImageUrl,
+      chip_set_id: chipSetId,
       club_id: clubId,
       visibility,
     },
     blindStructureId,
     customLevels,
+    chipRack,
   };
 }

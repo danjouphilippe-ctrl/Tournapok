@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createTournament } from "@/app/tournois/actions";
 import { TournoiForm } from "@/components/TournoiForm";
 import { getManagedClubOptions } from "@/lib/clubOptions";
+import { getChipSetOptions } from "@/lib/chipSetOptions";
 
 export default async function NouveauTournoiDansEvenementPage({
   params,
@@ -49,10 +50,12 @@ export default async function NouveauTournoiDansEvenementPage({
   });
 
   const clubOptions = await getManagedClubOptions(supabase, user.id);
+  const chipSetOptions = await getChipSetOptions(supabase);
 
   return (
     <TournoiForm
       structureOptions={structureOptions}
+      chipSetOptions={chipSetOptions}
       clubOptions={clubOptions}
       action={createTournament}
       title="Créer un tournoi dans l'évènement"

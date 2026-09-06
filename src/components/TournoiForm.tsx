@@ -3,11 +3,13 @@
 import Link from "next/link";
 import { useRef, useState } from "react";
 import { useActionState } from "react";
-import type { PayoutInput, TournamentFormState } from "@/app/tournois/actions";
+import type { ChipRackEntryInput, PayoutInput, TournamentFormState } from "@/app/tournois/actions";
 import { BlindLevelsEditor, defaultLevel } from "@/components/BlindLevelsEditor";
 import { PayoutsEditor } from "@/components/PayoutsEditor";
+import { ChipRackEditor } from "@/components/ChipRackEditor";
 import { TournamentChipPicker } from "@/components/TournamentChipPicker";
 import type { StructureLevelInput } from "@/app/structures/actions";
+import type { ChipSetOption } from "@/lib/chipSetOptions";
 
 const emptyState: TournamentFormState = { error: null };
 
@@ -53,6 +55,8 @@ export type TournoiFormValues = {
   blindStructureId: string;
   customLevels: StructureLevelInput[];
   chipImageUrl: string;
+  chipSetId: string;
+  chipRack: ChipRackEntryInput[];
   clubId: string;
   visibility: string;
 };
@@ -88,12 +92,15 @@ const defaultValues: TournoiFormValues = {
   blindStructureId: "",
   customLevels: [defaultLevel()],
   chipImageUrl: "",
+  chipSetId: "",
+  chipRack: [],
   clubId: "",
   visibility: "private",
 };
 
 export function TournoiForm({
   structureOptions,
+  chipSetOptions,
   clubOptions,
   action,
   title,
@@ -105,6 +112,7 @@ export function TournoiForm({
   eventId,
 }: {
   structureOptions: { id: string; label: string }[];
+  chipSetOptions: ChipSetOption[];
   clubOptions: { id: string; name: string }[];
   action: (state: TournamentFormState, formData: FormData) => Promise<TournamentFormState>;
   title: string;
@@ -120,8 +128,12 @@ export function TournoiForm({
 
   const [blindStructureId, setBlindStructureId] = useState(values.blindStructureId);
   const [customLevels, setCustomLevels] = useState(values.customLevels);
+  const [chipSetId, setChipSetId] = useState(values.chipSetId);
+  const [startingStack, setStartingStack] = useState(values.startingStack);
   const [clubId, setClubId] = useState(values.clubId);
   const [visibility, setVisibility] = useState(values.visibility);
+
+  const selectedChipSet = chipSetOptions.find((s) => s.id === chipSetId);
 
   const [rebuyEnabled, setRebuyEnabled] = useState(values.rebuyEnabled);
   const [addonEnabled, setAddonEnabled] = useState(values.addonEnabled);
@@ -268,12 +280,39 @@ export function TournoiForm({
                 type="number"
                 min={0}
                 step={100}
-                defaultValue={values.startingStack}
+                value={startingStack}
+                onChange={(e) => setStartingStack(Number(e.target.value))}
                 required
                 className="input"
               />
             </Field>
           </div>
+        </Section>
+
+        <Section title="Jetons de la cave de départ">
+          <Field label="Jeu de jetons">
+            <select
+              value={chipSetId}
+              onChange={(e) => setChipSetId(e.target.value)}
+              className="input"
+            >
+              <option value="">— Aucun —</option>
+              {chipSetOptions.map((s) => (
+                <option key={s.id} value={s.id}>
+                  {s.name}
+                </option>
+              ))}
+            </select>
+          </Field>
+          <input type="hidden" name="chip_set_id" value={chipSetId} />
+          {selectedChipSet && selectedChipSet.denominations.length > 0 && (
+            <ChipRackEditor
+              key={selectedChipSet.id}
+              denominations={selectedChipSet.denominations}
+              initialQuantities={values.chipRack}
+              targetTotal={startingStack}
+            />
+          )}
         </Section>
 
         <Section title="Recaves">

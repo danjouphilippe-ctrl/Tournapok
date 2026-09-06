@@ -41,11 +41,14 @@ export type TournamentRowInput = {
   payout_places: number | null;
   blind_structure_id: string | null;
   chip_image_url: string | null;
+  chip_set_id: string | null;
   club_id: string | null;
   visibility: string;
 };
 
 export type PayoutInput = { place: number; percentage: number };
+
+export type ChipRackEntryInput = { denominationId: string; value: number; quantity: number };
 
 export type ParsedTournamentFields =
   | { ok: false; error: string }
@@ -55,6 +58,7 @@ export type ParsedTournamentFields =
       blindStructureId: string | null;
       customLevels: StructureLevelInput[];
       payouts: PayoutInput[];
+      chipRack: ChipRackEntryInput[];
     };
 
 async function applyBlindLevels(
@@ -110,6 +114,24 @@ async function applyPayouts(
   }
 }
 
+async function applyChipRack(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  tournamentId: string,
+  chipRack: ChipRackEntryInput[],
+) {
+  await supabase.from("tournament_chip_rack").delete().eq("tournament_id", tournamentId);
+
+  if (chipRack.length > 0) {
+    await supabase.from("tournament_chip_rack").insert(
+      chipRack.map((c) => ({
+        tournament_id: tournamentId,
+        denomination_id: c.denominationId,
+        quantity: c.quantity,
+      })),
+    );
+  }
+}
+
 export async function createTournament(
   _prevState: TournamentFormState,
   formData: FormData,
@@ -140,6 +162,7 @@ export async function createTournament(
 
   await applyBlindLevels(supabase, tournament.id, parsed.blindStructureId, parsed.customLevels);
   await applyPayouts(supabase, tournament.id, parsed.payouts);
+  await applyChipRack(supabase, tournament.id, parsed.chipRack);
 
   revalidatePath("/tournois");
   if (eventId) revalidatePath(`/evenements/${eventId}`);
@@ -184,6 +207,7 @@ export async function updateTournament(
 
   await applyBlindLevels(supabase, tournamentId, parsed.blindStructureId, parsed.customLevels);
   await applyPayouts(supabase, tournamentId, parsed.payouts);
+  await applyChipRack(supabase, tournamentId, parsed.chipRack);
 
   revalidatePath(`/tournois/${tournamentId}`);
   redirect(`/tournois/${tournamentId}`);
@@ -220,7 +244,7 @@ export async function duplicateTournament(tournamentId: string, inviteSamePlayer
   const { data: source } = await supabase
     .from("tournaments")
     .select(
-      "buy_in, starting_stack, min_players, max_players, table_size, rebuy_enabled, rebuy_max_per_player, rebuy_price, rebuy_chips, rebuy_stack_threshold, rebuy_until_level, addon_enabled, addon_price, addon_chips, addon_at_level, bounty_enabled, bounty_amount, bounty_progressive, late_registration_enabled, late_registration_until_level, guarantee_amount, payout_places, blind_structure_id, display_config, chip_image_url",
+      "buy_in, starting_stack, min_players, max_players, table_size, rebuy_enabled, rebuy_max_per_player, rebuy_price, rebuy_chips, rebuy_stack_threshold, rebuy_until_level, addon_enabled, addon_price, addon_chips, addon_at_level, bounty_enabled, bounty_amount, bounty_progressive, late_registration_enabled, late_registration_until_level, guarantee_amount, payout_places, blind_structure_id, display_config, chip_image_url, chip_set_id",
     )
     .eq("id", tournamentId)
     .single();
@@ -242,7 +266,7 @@ export async function duplicateTournament(tournamentId: string, inviteSamePlayer
 
   if (error || !created) return;
 
-  const [{ data: levels }, { data: payouts }] = await Promise.all([
+  const [{ data: levels }, { data: payouts }, { data: chipRack }] = await Promise.all([
     supabase
       .from("tournament_blind_levels")
       .select("level_number, is_break, small_blind, big_blind, ante, duration_minutes")
@@ -253,6 +277,10 @@ export async function duplicateTournament(tournamentId: string, inviteSamePlayer
       .select("place, percentage")
       .eq("tournament_id", tournamentId)
       .order("place"),
+    supabase
+      .from("tournament_chip_rack")
+      .select("denomination_id, quantity")
+      .eq("tournament_id", tournamentId),
   ]);
 
   if (levels && levels.length > 0) {
@@ -265,6 +293,12 @@ export async function duplicateTournament(tournamentId: string, inviteSamePlayer
     await supabase
       .from("tournament_payouts")
       .insert(payouts.map((p) => ({ ...p, tournament_id: created.id })));
+  }
+
+  if (chipRack && chipRack.length > 0) {
+    await supabase
+      .from("tournament_chip_rack")
+      .insert(chipRack.map((c) => ({ ...c, tournament_id: created.id })));
   }
 
   if (inviteSamePlayers) {
