@@ -37,7 +37,7 @@ export default async function StructuresPage() {
   );
 
   return (
-    <main className="page">
+    <main className="page page-list">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-semibold">Structures de blindes</h1>
         <Link href="/structures/nouvelle" className="btn btn-primary btn-sm">
@@ -54,14 +54,14 @@ export default async function StructuresPage() {
           </Link>
         </div>
       ) : (
-        <ul className="flex flex-col gap-3">
+        <ul className="list-grid">
           {structures.map((s) => {
             const stat = statsById.get(s.id);
             return (
               <li key={s.id}>
                 <Link
                   href={`/structures/${s.id}`}
-                  className="card card-link flex flex-col gap-1"
+                  className="card card-link flex h-full flex-col gap-1"
                 >
                   <span className="font-medium">{s.name}</span>
                   <span className="text-sm text-ink-soft">

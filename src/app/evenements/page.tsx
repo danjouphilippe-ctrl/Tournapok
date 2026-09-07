@@ -33,7 +33,7 @@ export default async function EvenementsPage() {
   }
 
   return (
-    <main className="page">
+    <main className="page page-list">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-semibold">Évènements</h1>
         <Link href="/evenements/nouveau" className="btn btn-primary btn-sm">
@@ -50,14 +50,14 @@ export default async function EvenementsPage() {
           </Link>
         </div>
       ) : (
-        <ul className="flex flex-col gap-3">
+        <ul className="list-grid">
           {events.map((e) => {
             const count = countByEvent.get(e.id) ?? 0;
             return (
               <li key={e.id}>
                 <Link
                   href={`/evenements/${e.id}`}
-                  className="card card-link flex items-center gap-3"
+                  className="card card-link flex h-full items-center gap-3"
                 >
                   {e.logo_url ? (
                     // eslint-disable-next-line @next/next/no-img-element

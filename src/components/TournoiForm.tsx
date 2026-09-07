@@ -176,11 +176,11 @@ export function TournoiForm({
           <Field label="Nom du tournoi">
             <input name="name" type="text" required defaultValue={values.name} className="input" />
           </Field>
-          <Field label="Description (optionnel)">
+          <Field label="Description" optional>
             <textarea name="description" rows={2} defaultValue={values.description} className="input" />
           </Field>
           <div className="flex flex-wrap items-end gap-3">
-            <Field label="Date (optionnel)">
+            <Field label="Date" optional>
               <input
                 ref={dateRef}
                 type="date"
@@ -188,7 +188,7 @@ export function TournoiForm({
                 className="input"
               />
             </Field>
-            <Field label="Heure (optionnel)">
+            <Field label="Heure" optional>
               <input
                 ref={timeRef}
                 type="time"
@@ -198,7 +198,7 @@ export function TournoiForm({
             </Field>
           </div>
           <input ref={scheduledAtRef} type="hidden" name="scheduled_at" />
-          <Field label="Lieu (optionnel)">
+          <Field label="Lieu" optional>
             <input name="location" type="text" defaultValue={values.location} className="input" />
           </Field>
           <div className="flex flex-wrap items-end gap-3">
@@ -212,7 +212,7 @@ export function TournoiForm({
                 className="input"
               />
             </Field>
-            <Field label="Joueurs max (optionnel)">
+            <Field label="Joueurs max" optional>
               <input
                 name="max_players"
                 type="number"
@@ -235,7 +235,7 @@ export function TournoiForm({
         </Section>
 
         <Section title="Club & visibilité">
-          <Field label="Club (optionnel)">
+          <Field label="Club" optional>
             <select
               value={clubId}
               onChange={(e) => {
@@ -500,7 +500,7 @@ export function TournoiForm({
         </Section>
 
         <Section title="Prize pool & répartition des gains">
-          <Field label="Garantie (€, optionnel)">
+          <Field label="Garantie (€)" optional>
             <input
               name="guarantee_amount"
               type="number"
@@ -545,12 +545,23 @@ function Section({ title, children }: { title: string; children: React.ReactNode
   );
 }
 
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
+function Field({
+  label,
+  optional,
+  children,
+}: {
+  label: string;
+  optional?: boolean;
+  children: React.ReactNode;
+}) {
   return (
     /* min-w-[8rem] : sur un écran de téléphone, trois champs sur une même
      * ligne deviennent illisibles — mieux vaut qu'ils passent à la ligne. */
     <label className="flex min-w-[8rem] flex-1 flex-col gap-1 text-sm">
-      <span className="font-medium">{label}</span>
+      <span className="font-medium">
+        {label}
+        {optional && <span className="ml-1.5 text-xs font-normal text-ink-faint">optionnel</span>}
+      </span>
       {children}
     </label>
   );

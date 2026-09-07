@@ -878,7 +878,7 @@ function DisplayConfigForm({
       className="mt-2 flex flex-col gap-2"
     >
       <label className="flex flex-col gap-1">
-        <span className="text-xs font-medium text-ink-soft">Titre personnalisé (optionnel)</span>
+        <span className="text-xs font-medium text-ink-soft">Titre personnalisé <span className="font-normal text-ink-faint">optionnel</span></span>
         <input
           name="title"
           type="text"

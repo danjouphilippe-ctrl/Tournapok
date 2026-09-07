@@ -39,7 +39,7 @@ export default async function TournoisPage() {
   const creatorPseudoById = new Map((creators ?? []).map((c) => [c.id, c.pseudo]));
 
   return (
-    <main className="page">
+    <main className="page page-list">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-semibold">Tournois</h1>
         <Link href="/tournois/nouveau" className="btn btn-primary btn-sm">
@@ -56,12 +56,12 @@ export default async function TournoisPage() {
           </Link>
         </div>
       ) : (
-        <ul className="flex flex-col gap-3">
+        <ul className="list-grid">
           {tournaments.map((t) => (
             <li key={t.id}>
               <Link
                 href={`/tournois/${t.id}`}
-                className="card card-link flex items-center justify-between gap-3"
+                className="card card-link flex h-full items-center justify-between gap-3"
               >
                 <div className="flex items-center gap-3">
                   {t.chip_image_url ? (

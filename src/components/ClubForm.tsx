@@ -59,11 +59,11 @@ export function ClubForm({
       <h1 className="text-2xl font-semibold">{title}</h1>
 
       <form action={formAction} className="flex flex-col gap-6">
-        <Field label="Bannière (optionnel)">
+        <Field label="Bannière" optional>
           <ClubBannerPicker userId={userId} initialValue={values.bannerUrl} />
         </Field>
 
-        <Field label="Logo (optionnel)">
+        <Field label="Logo" optional>
           <ClubLogoPicker userId={userId} initialValue={values.logoUrl} />
         </Field>
 
@@ -71,15 +71,15 @@ export function ClubForm({
           <input name="name" type="text" required defaultValue={values.name} className="input" />
         </Field>
 
-        <Field label="Description / philosophie (optionnel)">
+        <Field label="Description / philosophie" optional>
           <textarea name="description" rows={3} defaultValue={values.description} className="input" />
         </Field>
 
-        <Field label="Lieu habituel (optionnel)">
+        <Field label="Lieu habituel" optional>
           <input name="location" type="text" defaultValue={values.location} className="input" />
         </Field>
 
-        <Field label="Forme juridique (optionnel)">
+        <Field label="Forme juridique" optional>
           <input
             name="legal_form"
             type="text"
@@ -89,15 +89,15 @@ export function ClubForm({
           />
         </Field>
 
-        <Field label="Téléphone (optionnel)">
+        <Field label="Téléphone" optional>
           <input name="phone" type="tel" defaultValue={values.phone} className="input" />
         </Field>
 
-        <Field label="Email (optionnel)">
+        <Field label="Email" optional>
           <input name="email" type="email" defaultValue={values.email} className="input" />
         </Field>
 
-        <Field label="Adresse (optionnel)">
+        <Field label="Adresse" optional>
           <input name="address" type="text" defaultValue={values.address} className="input" />
         </Field>
 
@@ -126,10 +126,21 @@ export function ClubForm({
   );
 }
 
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
+function Field({
+  label,
+  optional,
+  children,
+}: {
+  label: string;
+  optional?: boolean;
+  children: React.ReactNode;
+}) {
   return (
-    <label className="flex flex-col gap-1 text-sm">
-      <span className="font-medium">{label}</span>
+    <label className="flex min-w-[8rem] flex-1 flex-col gap-1 text-sm">
+      <span className="font-medium">
+        {label}
+        {optional && <span className="ml-1.5 text-xs font-normal text-ink-faint">optionnel</span>}
+      </span>
       {children}
     </label>
   );

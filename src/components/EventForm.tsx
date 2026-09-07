@@ -87,7 +87,7 @@ export function EventForm({
       <h1 className="text-2xl font-semibold">{title}</h1>
 
       <form action={formAction} onSubmit={computeScheduledAt} className="flex flex-col gap-6">
-        <Field label="Logo de l'évènement (optionnel)">
+        <Field label="Logo de l'évènement" optional>
           <EventLogoPicker userId={userId} initialValue={values.logoUrl} />
           <span className="text-xs text-ink-faint">
             Format recommandé : au moins 800 × 400 pixels (ratio 2:1) pour un rendu net.
@@ -98,7 +98,7 @@ export function EventForm({
           <input name="name" type="text" required defaultValue={values.name} className="input" />
         </Field>
 
-        <Field label="Description (optionnel)">
+        <Field label="Description" optional>
           <textarea name="description" rows={3} defaultValue={values.description} className="input" />
         </Field>
 
@@ -134,7 +134,7 @@ export function EventForm({
           />
         </Field>
 
-        <Field label="Nombre de joueurs max (optionnel)">
+        <Field label="Nombre de joueurs max" optional>
           <input
             name="max_players"
             type="number"
@@ -146,7 +146,7 @@ export function EventForm({
 
         <label className="flex flex-col gap-1 text-sm">
           <span className="flex items-baseline justify-between">
-            <span className="font-medium">Organisation (optionnel)</span>
+            <span className="font-medium">Organisation <span className="ml-1.5 text-xs font-normal text-ink-faint">optionnel</span></span>
             <span className="text-xs text-ink-faint">{organisationValue.length}/500</span>
           </span>
           <textarea
@@ -160,7 +160,7 @@ export function EventForm({
           />
         </label>
 
-        <Field label="Club (optionnel)">
+        <Field label="Club" optional>
           <select
             value={clubId}
             onChange={(e) => {
@@ -212,12 +212,23 @@ export function EventForm({
   );
 }
 
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
+function Field({
+  label,
+  optional,
+  children,
+}: {
+  label: string;
+  optional?: boolean;
+  children: React.ReactNode;
+}) {
   return (
     /* min-w-[8rem] : sur un écran de téléphone, deux champs sur une même
      * ligne deviennent illisibles — mieux vaut qu'ils passent à la ligne. */
     <label className="flex min-w-[8rem] flex-1 flex-col gap-1 text-sm">
-      <span className="font-medium">{label}</span>
+      <span className="font-medium">
+        {label}
+        {optional && <span className="ml-1.5 text-xs font-normal text-ink-faint">optionnel</span>}
+      </span>
       {children}
     </label>
   );

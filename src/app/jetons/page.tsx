@@ -24,7 +24,7 @@ export default async function JetonsPage() {
   const optionsById = new Map(chipSetOptions.map((s) => [s.id, s]));
 
   return (
-    <main className="page">
+    <main className="page page-list">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-semibold">Jeux de jetons</h1>
         <Link href="/jetons/nouveau" className="btn btn-primary btn-sm">
@@ -41,7 +41,7 @@ export default async function JetonsPage() {
           </Link>
         </div>
       ) : (
-        <ul className="flex flex-col gap-3">
+        <ul className="list-grid">
           {chipSets.map((s) => {
             const option = optionsById.get(s.id);
             return (

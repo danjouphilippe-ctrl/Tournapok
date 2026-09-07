@@ -46,7 +46,7 @@ export function NouvelleStructureForm({
 
         <div className="flex flex-col gap-1">
           <label htmlFor="description" className="text-sm font-medium">
-            Description (optionnel)
+            Description <span className="ml-1.5 text-xs font-normal text-ink-faint">optionnel</span>
           </label>
           <textarea
             id="description"

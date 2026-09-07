@@ -45,21 +45,21 @@ export function ProfilForm({
         />
       </label>
 
-      {/* items-end : le libellé « Âge » passe sur deux lignes sur mobile,
-        * ce qui décalait son champ vers le bas par rapport à « Ville ». */}
+      {/* items-end : les champs restent alignés même si un libellé passe
+        * sur deux lignes. */}
       <div className="flex flex-wrap items-end gap-3">
         <label className="flex min-w-[8rem] flex-1 flex-col gap-1 text-sm">
-          <span className="font-medium">Ville (optionnel)</span>
+          <span className="font-medium">Ville <span className="ml-1.5 text-xs font-normal text-ink-faint">optionnel</span></span>
           <input name="city" type="text" defaultValue={city} className="input" />
         </label>
-        <label className="flex w-24 flex-col gap-1 text-sm">
-          <span className="font-medium">Âge (optionnel)</span>
+        <label className="flex w-28 flex-col gap-1 text-sm">
+          <span className="font-medium">Âge <span className="ml-1.5 text-xs font-normal text-ink-faint">optionnel</span></span>
           <input name="age" type="number" min={0} max={120} defaultValue={age ?? ""} className="input" />
         </label>
       </div>
 
       <label className="flex flex-col gap-1 text-sm">
-        <span className="font-medium">Type de joueur (optionnel)</span>
+        <span className="font-medium">Type de joueur <span className="ml-1.5 text-xs font-normal text-ink-faint">optionnel</span></span>
         <select name="player_type" defaultValue={playerType} className="input">
           {PLAYER_TYPE_OPTIONS.map((o) => (
             <option key={o.value} value={o.value}>
@@ -70,7 +70,7 @@ export function ProfilForm({
       </label>
 
       <label className="flex flex-col gap-1 text-sm">
-        <span className="font-medium">Type de joueur maison (optionnel)</span>
+        <span className="font-medium">Type de joueur maison <span className="ml-1.5 text-xs font-normal text-ink-faint">optionnel</span></span>
         <input
           name="player_type_custom"
           type="text"
@@ -83,7 +83,7 @@ export function ProfilForm({
 
       <label className="flex flex-col gap-1 text-sm">
         <span className="flex items-baseline justify-between">
-          <span className="font-medium">Bio (optionnel)</span>
+          <span className="font-medium">Bio <span className="ml-1.5 text-xs font-normal text-ink-faint">optionnel</span></span>
           <span className="text-xs text-ink-faint">{bioValue.length}/500</span>
         </span>
         <textarea

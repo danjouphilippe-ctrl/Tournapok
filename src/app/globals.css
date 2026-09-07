@@ -509,15 +509,42 @@ input[type="radio"] {
   padding: 3rem 1.25rem;
 }
 
-/* Variantes de largeur : une seule colonne de référence pour tout le
- * site, au lieu des max-w-sm / max-w-lg / max-w-5xl improvisés page par
- * page qui faisaient sauter la largeur d'un écran à l'autre. */
+/* Trois paliers de largeur, et rien d'autre — au lieu des max-w-sm /
+ * max-w-lg / max-w-5xl improvisés page par page qui faisaient sauter la
+ * largeur d'un écran à l'autre :
+ *
+ *   .page-narrow  26rem  écran à but unique (connexion, inscription)
+ *   .page         40rem  défaut : formulaires et pages de détail
+ *   .page-wide    64rem  contenu qui a besoin de largeur (tables)
+ *
+ * .page-list emprunte le palier large, mais seulement à partir de
+ * 64rem de fenêtre, là où la liste passe réellement sur deux colonnes :
+ * en dessous, une liste étirée serait moins lisible, pas plus. */
 .page-narrow {
   max-width: 26rem;
   justify-content: center;
 }
 .page-wide {
   max-width: 64rem;
+}
+.page-list {
+  max-width: 40rem;
+}
+
+/* Une liste de cartes : une colonne sur téléphone et tablette, deux
+ * au-delà — sinon les cartes s'étirent sur toute la largeur d'un écran
+ * de bureau pour n'afficher qu'une ligne d'information chacune. */
+.list-grid {
+  display: grid;
+  gap: 0.75rem;
+}
+@media (min-width: 64rem) {
+  .page-list {
+    max-width: 64rem;
+  }
+  .list-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 .eyebrow {
