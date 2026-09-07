@@ -58,14 +58,16 @@ export default async function ClubPage({
         .select("user_id, role, profiles!club_members_user_id_fkey(pseudo)")
         .eq("club_id", id)
         .order("role"),
+      /* Bannières, logos, dates et buy-in : ce qui suit ne se contente
+       * plus de lister des noms, il faut donner envie d'y aller. */
       supabase
         .from("tournaments")
-        .select("id, name, status, visibility")
+        .select("id, name, status, visibility, banner_url, chip_image_url, scheduled_at, buy_in")
         .eq("club_id", id)
         .order("created_at", { ascending: false }),
       supabase
         .from("events")
-        .select("id, name, visibility, scheduled_at")
+        .select("id, name, visibility, scheduled_at, logo_url, location")
         .eq("club_id", id)
         .order("created_at", { ascending: false }),
       supabase
@@ -125,81 +127,144 @@ export default async function ClubPage({
             <span className="chip">👤 Créé par {organizer?.pseudo ?? "—"}</span>
             {club.location && <span className="chip">📍 {club.location}</span>}
             <span className="chip">
+              👥 {allMembers.length} membre{allMembers.length > 1 ? "s" : ""}
+            </span>
+          </div>
+
+          {/* Même traitement que sur la carte de la liste : la visibilité
+            * occupe le créneau du statut, en badge et non en chip. */}
+          <div>
+            <span className={`badge${club.visibility === "public" ? " badge-success" : ""}`}>
               {club.visibility === "public" ? "🌐 Club public" : "🔒 Club privé"}
             </span>
           </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-[minmax(0,1fr)_2fr]">
-        {(club.legal_form || club.phone || club.email || club.address) && (
-          <div className="card section-manage flex flex-col gap-1 text-sm text-ink-soft">
-            <p className="section-eyebrow">
-              <span className="dot" />
-              Coordonnées
-            </p>
-            {club.legal_form && <p>{club.legal_form}</p>}
-            {club.address && <p>📍 {club.address}</p>}
-            {club.phone && <p>☎ {club.phone}</p>}
-            {club.email && <p>✉ {club.email}</p>}
-          </div>
-        )}
+      {(club.legal_form || club.phone || club.email || club.address) && (
+        <div className="card section-manage flex flex-col gap-1 text-sm text-ink-soft">
+          <p className="section-eyebrow">
+            <span className="dot" />
+            Coordonnées
+          </p>
+          {club.legal_form && <p>{club.legal_form}</p>}
+          {club.address && <p>📍 {club.address}</p>}
+          {club.phone && <p>☎ {club.phone}</p>}
+          {club.email && <p>✉ {club.email}</p>}
+        </div>
+      )}
 
-        {(upcomingTournaments.length > 0 ||
-          upcomingEvents.length > 0 ||
-          pastTournaments.length > 0 ||
-          pastEvents.length > 0) && (
-          <div className="card flex flex-col gap-3">
-            {(upcomingTournaments.length > 0 || upcomingEvents.length > 0) && (
-              <div className="flex flex-col gap-2">
-                <p className="eyebrow">À venir</p>
-                <ul className="flex flex-col gap-1">
-                  {upcomingEvents.map((e) => (
-                    <li key={`event-${e.id}`}>
-                      <Link href={`/evenements/${e.id}`} className="link link-action text-sm">
-                        {e.name}
-                      </Link>{" "}
-                      <span className="text-xs text-ink-faint">évènement</span>
-                    </li>
-                  ))}
-                  {upcomingTournaments.map((t) => (
-                    <li key={`tournament-${t.id}`}>
-                      <Link href={`/tournois/${t.id}`} className="link link-action text-sm">
-                        {t.name}
-                      </Link>{" "}
-                      <span className="text-xs text-ink-faint">tournoi</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
+      {(upcomingEvents.length > 0 || upcomingTournaments.length > 0) && (
+        <div className="flex flex-col gap-3">
+          <h2 className="font-semibold">À venir</h2>
+          <ul className="flex flex-col gap-3">
+            {upcomingEvents.map((e) => (
+              <li key={`event-${e.id}`}>
+                <Link
+                  href={`/evenements/${e.id}`}
+                  className="card card-flush card-link flex flex-col"
+                >
+                  {e.logo_url ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={e.logo_url}
+                      alt=""
+                      className="h-28 w-full shrink-0 object-cover sm:h-36"
+                    />
+                  ) : null}
+                  <div className="flex flex-col gap-3 p-5">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="badge badge-accent">Évènement</span>
+                      <span className="wrap-anywhere font-medium">{e.name}</span>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {e.scheduled_at && (
+                        <span className="chip chip-date">
+                          📅{" "}
+                          {new Date(e.scheduled_at).toLocaleDateString("fr-FR", {
+                            timeZone: "Europe/Paris",
+                            dateStyle: "long",
+                          })}
+                        </span>
+                      )}
+                      {e.location && <span className="chip">📍 {e.location}</span>}
+                    </div>
+                  </div>
+                </Link>
+              </li>
+            ))}
 
-            {(pastTournaments.length > 0 || pastEvents.length > 0) && (
-              <div className="flex flex-col gap-2 border-t border-line pt-3">
-                <p className="eyebrow">Passés</p>
-                <ul className="flex flex-col gap-1">
-                  {pastEvents.map((e) => (
-                    <li key={`event-${e.id}`}>
-                      <Link href={`/evenements/${e.id}`} className="link link-action text-sm">
-                        {e.name}
-                      </Link>{" "}
-                      <span className="text-xs text-ink-faint">évènement</span>
-                    </li>
-                  ))}
-                  {pastTournaments.map((t) => (
-                    <li key={`tournament-${t.id}`}>
-                      <Link href={`/tournois/${t.id}`} className="link link-action text-sm">
-                        {t.name}
-                      </Link>{" "}
-                      <span className="text-xs text-ink-faint">tournoi</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-          </div>
-        )}
-      </div>
+            {upcomingTournaments.map((t) => (
+              <li key={`tournament-${t.id}`}>
+                <Link
+                  href={`/tournois/${t.id}`}
+                  className="card card-flush card-link flex flex-col"
+                >
+                  {t.banner_url ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={t.banner_url}
+                      alt=""
+                      className="h-28 w-full shrink-0 object-cover sm:h-36"
+                    />
+                  ) : null}
+                  <div className="flex flex-col gap-3 p-5">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="badge">Tournoi</span>
+                      {t.chip_image_url ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={t.chip_image_url}
+                          alt=""
+                          className="h-8 w-8 shrink-0 rounded-full border border-line object-cover"
+                        />
+                      ) : null}
+                      <span className="wrap-anywhere font-medium">{t.name}</span>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {t.scheduled_at && (
+                        <span className="chip chip-date">
+                          📅{" "}
+                          {new Date(t.scheduled_at).toLocaleDateString("fr-FR", {
+                            timeZone: "Europe/Paris",
+                            dateStyle: "long",
+                          })}
+                        </span>
+                      )}
+                      <span className="chip chip-money">💶 Buy-in {t.buy_in} €</span>
+                    </div>
+                  </div>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {/* Le passé se consulte, il n'a pas à séduire : liste sobre. */}
+      {(pastEvents.length > 0 || pastTournaments.length > 0) && (
+        <div className="flex flex-col gap-2">
+          <h2 className="font-semibold">Passés</h2>
+          <ul className="card flex flex-col gap-1">
+            {pastEvents.map((e) => (
+              <li key={`event-${e.id}`}>
+                <Link href={`/evenements/${e.id}`} className="link link-action text-sm">
+                  {e.name}
+                </Link>{" "}
+                <span className="text-xs text-ink-faint">évènement</span>
+              </li>
+            ))}
+            {pastTournaments.map((t) => (
+              <li key={`tournament-${t.id}`}>
+                <Link href={`/tournois/${t.id}`} className="link link-action text-sm">
+                  {t.name}
+                </Link>{" "}
+                <span className="text-xs text-ink-faint">tournoi</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       {club.visibility === "public" && !myMembership && (
         <div className="card">
@@ -210,7 +275,7 @@ export default async function ClubPage({
           ) : (
             <form action={requestToJoinClub.bind(null, id)}>
               <button type="submit" className="btn btn-primary w-full">
-                Demander à adhérer
+                Rejoindre le club
               </button>
             </form>
           )}

@@ -85,6 +85,8 @@ type Tournament = {
     show_average_stack: boolean;
     show_prize_pool: boolean;
     show_next_break: boolean;
+  /* Ajoutée après coup : absente des tournois plus anciens. */
+  show_time_left?: boolean;
     show_payouts: boolean;
   };
 };
@@ -255,6 +257,17 @@ export function AffichageClient({
       acc += l.duration_minutes * 60;
     }
   }
+
+  /* Temps restant jusqu'à la fin de la structure : le niveau en cours,
+   * plus tout ce qui suit, pauses comprises. C'est l'information que la
+   * salle regarde — « on finit dans combien de temps ? ». Sans horloge
+   * démarrée, la question n'a pas de sens, d'où le null. */
+  const endSeconds =
+    currentLevel && tournament.clock_status !== "idle"
+      ? levels
+          .filter((l) => l.level_number > tournament.current_level)
+          .reduce((acc, l) => acc + l.duration_minutes * 60, remainingSeconds)
+      : null;
 
   let lateRegSeconds: number | null = null;
   if (tournament.late_registration_enabled && tournament.late_registration_until_level !== null) {
@@ -500,6 +513,16 @@ export function AffichageClient({
                     Prochaine pause :{" "}
                     <span className="font-semibold text-foreground">
                       {formatDuration(nextBreakSeconds)}
+                    </span>
+                  </p>
+                )}
+                {/* La clé peut manquer sur les tournois créés avant son
+                  * ajout : par défaut on affiche. */}
+                {(cfg.show_time_left ?? true) && endSeconds !== null && (
+                  <p className="text-[clamp(0.875rem,2.5vh,1.5rem)] text-ink-soft">
+                    Fin prévue dans :{" "}
+                    <span className="font-semibold text-foreground">
+                      {formatDuration(endSeconds)}
                     </span>
                   </p>
                 )}

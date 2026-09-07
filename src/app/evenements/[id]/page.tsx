@@ -77,18 +77,19 @@ export default async function EvenementPage({
           {erreur}
         </p>
       )}
+      {/* Le logo est au format 2:1 : il sert de bannière pleine largeur,
+        * comme sur la carte de la liste et sur un tournoi. */}
+      {event.logo_url && (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={event.logo_url}
+          alt=""
+          className="h-40 w-full rounded-lg border border-line object-cover sm:h-56"
+        />
+      )}
+
       <div className="hero-card flex flex-col gap-3">
-        <div className="flex min-w-0 items-center gap-3">
-          {event.logo_url && (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={event.logo_url}
-              alt=""
-              className="h-16 w-28 shrink-0 rounded-lg border border-line object-cover"
-            />
-          )}
-          <h1 className="min-w-0 wrap-anywhere text-2xl font-semibold">{event.name}</h1>
-        </div>
+        <h1 className="wrap-anywhere text-2xl font-semibold">{event.name}</h1>
         {event.description && (
           <p className="text-sm text-ink-soft">
             <FormattedText text={event.description} />

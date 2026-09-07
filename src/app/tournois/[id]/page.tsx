@@ -39,6 +39,8 @@ type DisplayConfig = {
   show_average_stack: boolean;
   show_prize_pool: boolean;
   show_next_break: boolean;
+  /* Ajoutée après coup : absente des tournois plus anciens. */
+  show_time_left?: boolean;
   show_payouts: boolean;
 };
 
@@ -902,6 +904,7 @@ function DisplayConfigForm({
     { name: "show_average_stack", label: "Tapis moyen" },
     { name: "show_prize_pool", label: "Prize pool" },
     { name: "show_next_break", label: "Prochaine pause" },
+    { name: "show_time_left", label: "Fin prévue" },
     { name: "show_payouts", label: "Répartition des gains" },
   ];
 
@@ -923,7 +926,15 @@ function DisplayConfigForm({
       <div className="grid grid-cols-2 gap-1">
         {fields.map((f) => (
           <label key={f.name} className="flex items-center gap-2 text-sm">
-            <input type="checkbox" name={f.name} defaultChecked={config[f.name] as boolean} />
+            {/* ?? true : une option ajoutée après coup est absente des
+              * tournois plus anciens. L'écran l'affiche par défaut, la
+              * case doit dire la même chose — sinon un simple
+              * enregistrement la désactiverait sans qu'on l'ait voulu. */}
+            <input
+              type="checkbox"
+              name={f.name}
+              defaultChecked={(config[f.name] as boolean | undefined) ?? true}
+            />
             {f.label}
           </label>
         ))}

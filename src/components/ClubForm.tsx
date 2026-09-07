@@ -104,7 +104,7 @@ export function ClubForm({
         <Field label="Visibilité">
           <select name="visibility" defaultValue={values.visibility} className="input">
             <option value="private">Privé — sur invitation uniquement</option>
-            <option value="public">Public — les joueurs peuvent demander à adhérer</option>
+            <option value="public">Public — les joueurs peuvent demander à rejoindre</option>
           </select>
         </Field>
 
