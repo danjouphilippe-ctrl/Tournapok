@@ -158,6 +158,84 @@ input[type="radio"] {
   overflow: hidden;
 }
 
+/* ---------------------------------------------------------------
+ * Vitesse d'une structure de blindes.
+ *
+ * L'échelle va du froid au chaud — sarcelle pour le deepstack, vert
+ * pour le standard, or pour le turbo, corail pour l'hyper-turbo — de
+ * sorte qu'on classe les structures d'un coup d'œil, sans légende.
+ * « Personnalisée » n'a pas de vitesse connue : elle reste en ardoise,
+ * hors de l'échelle. Chaque rang ne définit que ses trois variables,
+ * tout le reste s'en sert.
+ * --------------------------------------------------------------- */
+.speed-0 {
+  --speed: var(--slate);
+  --speed-soft: var(--slate-soft);
+  --speed-line: var(--slate-line);
+}
+.speed-1 {
+  --speed: var(--teal);
+  --speed-soft: var(--teal-soft);
+  --speed-line: var(--teal-line);
+}
+.speed-2 {
+  --speed: var(--success);
+  --speed-soft: var(--success-soft);
+  --speed-line: var(--success-line);
+}
+.speed-3 {
+  --speed: var(--gold-strong);
+  --speed-soft: var(--gold-soft);
+  --speed-line: var(--gold-line);
+}
+.speed-4 {
+  --speed: var(--danger-strong);
+  --speed-soft: var(--danger-soft);
+  --speed-line: var(--danger-line);
+}
+
+/* La carte prend la couleur de sa vitesse : bandeau à gauche, halo
+ * assorti, et un fond légèrement dégradé pour qu'elle ne soit plus un
+ * simple aplat sombre. */
+.speed-card {
+  border-left: 3px solid var(--speed);
+  background:
+    linear-gradient(150deg, var(--speed-soft) 0%, transparent 55%),
+    linear-gradient(160deg, var(--color-surface-2) 0%, var(--color-surface) 100%);
+}
+.speed-card:hover {
+  border-color: var(--speed-line);
+  border-left-color: var(--speed);
+}
+
+.chip-speed {
+  background: var(--speed-soft);
+  border-color: var(--speed-line);
+  color: var(--speed);
+}
+
+/* Jauge : quatre barres de hauteur croissante, remplies jusqu'au rang
+ * de la structure. Elle dit la même chose que la couleur, mais en
+ * quantité — utile pour qui distingue mal les teintes. */
+.speed-gauge {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 1rem;
+}
+.speed-gauge span {
+  width: 4px;
+  border-radius: 1px;
+  background: var(--color-line-strong);
+}
+.speed-gauge span:nth-child(1) { height: 25%; }
+.speed-gauge span:nth-child(2) { height: 50%; }
+.speed-gauge span:nth-child(3) { height: 75%; }
+.speed-gauge span:nth-child(4) { height: 100%; }
+.speed-gauge span.on {
+  background: var(--speed);
+}
+
 .btn {
   display: inline-flex;
   align-items: center;

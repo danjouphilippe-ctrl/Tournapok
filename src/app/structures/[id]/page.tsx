@@ -3,14 +3,14 @@ import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { rateStructure } from "@/app/structures/actions";
 import { FormattedText } from "@/components/FormattedText";
-
-const SPEED_LABELS: Record<string, string> = {
-  standard: "Standard",
-  turbo: "Turbo",
-  hyperturbo: "Hyper-turbo",
-  deepstack: "Deepstack",
-  personnalise: "Personnalisée",
-};
+import { SpeedGauge } from "@/components/SpeedGauge";
+import {
+  formatDuration,
+  speedClass,
+  speedLabel,
+  structureTotals,
+  withElapsed,
+} from "@/lib/blindStructures";
 
 function getPseudo(s: { profiles: { pseudo: string }[] | { pseudo: string } | null }) {
   const profiles = s.profiles;
@@ -60,6 +60,15 @@ export default async function StructureDetailPage({
     .eq("user_id", user.id)
     .maybeSingle();
 
+  const allLevels = levels ?? [];
+  const { total, play, breaks } = structureTotals(allLevels);
+  const playingLevels = allLevels.filter((l) => !l.is_break);
+  const breakCount = allLevels.length - playingLevels.length;
+
+  /* Cumul « à la fin de ce niveau » : la dernière ligne vaut donc la
+   * durée totale du tournoi. */
+  const levelsWithElapsed = withElapsed(allLevels);
+
   return (
     <main className="page">
       {erreur && (
@@ -68,20 +77,40 @@ export default async function StructureDetailPage({
         </p>
       )}
 
-      <div className="hero-card flex flex-col gap-3">
-        <h1 className="wrap-anywhere text-2xl font-semibold">{structure.name}</h1>
+      <div className={`hero-card ${speedClass(structure.speed_preset)} flex flex-col gap-3`}>
+        <div className="flex items-center gap-3">
+          <SpeedGauge preset={structure.speed_preset} />
+          <h1 className="min-w-0 wrap-anywhere text-2xl font-semibold">{structure.name}</h1>
+        </div>
         {structure.description && (
           <p className="wrap-anywhere text-sm text-ink-soft">
             <FormattedText text={structure.description} />
           </p>
         )}
+
+        <div className="flex flex-wrap gap-2">
+          <span className="chip chip-speed">⏱ {speedLabel(structure.speed_preset)}</span>
+          <span className="chip">
+            🃏 {playingLevels.length} niveau{playingLevels.length > 1 ? "x" : ""}
+          </span>
+          {breaks > 0 && (
+            <span className="chip">
+              ☕ {breakCount} pause{breakCount > 1 ? "s" : ""} ({formatDuration(breaks)})
+            </span>
+          )}
+        </div>
+
+        <div className="flex flex-wrap gap-2">
+          <span className="chip chip-money">⌛ Durée du tournoi {formatDuration(total)}</span>
+          <span className="chip chip-money">▶ Temps de jeu {formatDuration(play)}</span>
+        </div>
+
         <div className="flex flex-wrap gap-2">
           <span className="chip">
             👤 {structure.created_by ? `Par ${getPseudo(structure) ?? "un joueur"}` : "Officielle"}
           </span>
-          <span className="chip">⏱ {SPEED_LABELS[structure.speed_preset] ?? structure.speed_preset}</span>
           {stats ? (
-            <span className="chip chip-money">⭐ {stats.avg_rating} ({stats.ratings_count} avis)</span>
+            <span className="chip">⭐ {stats.avg_rating} ({stats.ratings_count} avis)</span>
           ) : (
             <span className="chip">Pas encore noté</span>
           )}
@@ -114,7 +143,7 @@ export default async function StructureDetailPage({
       <div>
         <h2 className="mb-2 font-semibold">Niveaux</h2>
         <div className="card overflow-x-auto">
-          <table className="w-full text-sm">
+          <table className="w-full text-sm tabular-nums">
             <thead>
               <tr className="border-b border-line text-left text-ink-soft">
                 <th className="py-1 pr-2">#</th>
@@ -122,10 +151,11 @@ export default async function StructureDetailPage({
                 <th className="py-1 pr-2">BB</th>
                 <th className="py-1 pr-2">Ante</th>
                 <th className="py-1 pr-2">Durée</th>
+                <th className="py-1 pr-2 whitespace-nowrap">Temps cumulé</th>
               </tr>
             </thead>
             <tbody>
-              {(levels ?? []).map((l) => (
+              {levelsWithElapsed.map((l) => (
                 <tr key={l.level_number} className="border-b border-line/60 last:border-0">
                   <td className="py-1 pr-2">{l.level_number}</td>
                   {l.is_break ? (
@@ -140,6 +170,9 @@ export default async function StructureDetailPage({
                     </>
                   )}
                   <td className="py-1 pr-2">{l.duration_minutes} min</td>
+                  <td className="py-1 pr-2 whitespace-nowrap text-ink-soft">
+                    {formatDuration(l.elapsed)}
+                  </td>
                 </tr>
               ))}
             </tbody>
