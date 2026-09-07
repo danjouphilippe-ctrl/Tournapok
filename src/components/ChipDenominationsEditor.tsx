@@ -6,8 +6,10 @@ export function defaultDenomination(): ChipDenominationInput {
   return { color: "", value: 1 };
 }
 
+/* text-base explicite : sans lui, l'input hérite du text-xs du label et
+ * iOS zoome la page au focus. */
 const fieldClass =
-  "w-28 rounded-md border border-line bg-surface px-2 py-1 text-ink focus:border-accent focus:outline-none";
+  "w-28 rounded-md border border-line bg-surface px-2 py-1 text-base text-ink focus:border-accent";
 
 export function ChipDenominationsEditor({
   denominations,
@@ -54,7 +56,7 @@ export function ChipDenominationsEditor({
           <button
             type="button"
             onClick={() => removeDenomination(index)}
-            className="link-danger ml-auto text-sm"
+            className="link-danger link-action ml-auto text-sm"
           >
             Retirer
           </button>

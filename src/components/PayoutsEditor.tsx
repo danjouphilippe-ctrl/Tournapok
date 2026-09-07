@@ -86,7 +86,7 @@ export function PayoutsEditor({
                 ≈ {Math.round((prizePool * pct) / 100).toLocaleString("fr-FR")} €
               </span>
             )}
-            <button type="button" onClick={() => removePlace(i)} className="link-danger ml-auto text-sm">
+            <button type="button" onClick={() => removePlace(i)} className="link-danger link-action ml-auto text-sm">
               Retirer
             </button>
           </div>

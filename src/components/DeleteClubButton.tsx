@@ -16,7 +16,7 @@ export function DeleteClubButton({ clubId }: { clubId: string }) {
         }
       }}
     >
-      <button type="submit" className="link-danger text-sm">
+      <button type="submit" className="link-danger link-action text-sm">
         Supprimer le club
       </button>
     </form>

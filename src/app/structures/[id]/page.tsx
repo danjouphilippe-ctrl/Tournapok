@@ -86,7 +86,7 @@ export default async function StructureDetailPage({
             <span className="chip">Pas encore noté</span>
           )}
         </div>
-        <Link href={`/structures/nouvelle?from=${structure.id}`} className="link text-sm w-fit">
+        <Link href={`/structures/nouvelle?from=${structure.id}`} className="link link-action text-sm w-fit">
           Dupliquer et personnaliser
         </Link>
       </div>
@@ -147,7 +147,7 @@ export default async function StructureDetailPage({
         </div>
       </div>
 
-      <Link href="/structures" className="link text-sm">
+      <Link href="/structures" className="link link-action text-sm">
         Retour aux structures
       </Link>
     </main>

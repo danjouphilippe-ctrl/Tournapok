@@ -10,7 +10,7 @@ export default function ConnexionPage() {
   const [state, formAction, pending] = useActionState(login, initialState);
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-sm flex-col justify-center gap-6 px-4">
+    <main className="page page-narrow">
       <div>
         <h1 className="text-2xl font-semibold">Connexion</h1>
         <p className="text-sm text-ink-soft">Content de te revoir.</p>

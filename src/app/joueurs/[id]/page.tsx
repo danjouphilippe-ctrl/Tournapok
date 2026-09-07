@@ -84,7 +84,7 @@ export default async function JoueurPage({
         </div>
       )}
 
-      <Link href="/tournois" className="link text-sm">
+      <Link href="/tournois" className="link link-action text-sm">
         Retour aux tournois
       </Link>
     </main>

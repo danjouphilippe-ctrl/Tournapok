@@ -16,7 +16,7 @@ export function DeleteEventButton({ eventId }: { eventId: string }) {
         }
       }}
     >
-      <button type="submit" className="link-danger text-sm">
+      <button type="submit" className="link-danger link-action text-sm">
         Supprimer l&apos;évènement
       </button>
     </form>

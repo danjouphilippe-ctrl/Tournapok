@@ -24,8 +24,10 @@ export function defaultBreak(): StructureLevelInput {
   };
 }
 
+/* text-base explicite : sans lui, l'input hérite du text-xs du label et
+ * iOS zoome la page au focus. */
 const fieldClass =
-  "w-20 rounded-md border border-line bg-surface px-2 py-1 text-ink focus:border-accent focus:outline-none";
+  "w-20 rounded-md border border-line bg-surface px-2 py-1 text-base text-ink focus:border-accent";
 
 export function BlindLevelsEditor({
   levels,
@@ -118,7 +120,7 @@ export function BlindLevelsEditor({
             </>
           )}
 
-          <button type="button" onClick={() => removeLevel(index)} className="link-danger ml-auto text-sm">
+          <button type="button" onClick={() => removeLevel(index)} className="link-danger link-action ml-auto text-sm">
             Retirer
           </button>
         </div>

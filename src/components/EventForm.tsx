@@ -83,7 +83,7 @@ export function EventForm({
   const initialDateTime = splitLocalDateTime(values.scheduledAt);
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-lg flex-col gap-8 px-4 py-12">
+    <main className="page">
       <h1 className="text-2xl font-semibold">{title}</h1>
 
       <form action={formAction} onSubmit={computeScheduledAt} className="flex flex-col gap-6">
@@ -102,7 +102,7 @@ export function EventForm({
           <textarea name="description" rows={3} defaultValue={values.description} className="input" />
         </Field>
 
-        <div className="flex gap-3">
+        <div className="flex flex-wrap items-end gap-3">
           <Field label="Date">
             <input
               ref={dateRef}
@@ -205,7 +205,7 @@ export function EventForm({
         </button>
       </form>
 
-      <Link href={cancelHref} className="link text-sm">
+      <Link href={cancelHref} className="link link-action text-sm">
         Annuler
       </Link>
     </main>
@@ -214,7 +214,9 @@ export function EventForm({
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <label className="flex flex-col gap-1 text-sm">
+    /* min-w-[8rem] : sur un écran de téléphone, deux champs sur une même
+     * ligne deviennent illisibles — mieux vaut qu'ils passent à la ligne. */
+    <label className="flex min-w-[8rem] flex-1 flex-col gap-1 text-sm">
       <span className="font-medium">{label}</span>
       {children}
     </label>

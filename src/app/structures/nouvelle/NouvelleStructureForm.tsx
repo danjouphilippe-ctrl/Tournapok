@@ -23,7 +23,7 @@ export function NouvelleStructureForm({
   const [levels, setLevels] = useState(initialLevels ?? [defaultLevel()]);
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-lg flex-col gap-6 px-4 py-12">
+    <main className="page">
       <h1 className="text-2xl font-semibold">
         {initialName ? "Dupliquer une structure de blindes" : "Créer une structure de blindes"}
       </h1>
@@ -88,7 +88,7 @@ export function NouvelleStructureForm({
         </button>
       </form>
 
-      <Link href="/structures" className="link text-sm">
+      <Link href="/structures" className="link link-action text-sm">
         Annuler
       </Link>
     </main>

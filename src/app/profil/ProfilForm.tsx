@@ -45,8 +45,10 @@ export function ProfilForm({
         />
       </label>
 
-      <div className="flex gap-3">
-        <label className="flex flex-1 flex-col gap-1 text-sm">
+      {/* items-end : le libellé « Âge » passe sur deux lignes sur mobile,
+        * ce qui décalait son champ vers le bas par rapport à « Ville ». */}
+      <div className="flex flex-wrap items-end gap-3">
+        <label className="flex min-w-[8rem] flex-1 flex-col gap-1 text-sm">
           <span className="font-medium">Ville (optionnel)</span>
           <input name="city" type="text" defaultValue={city} className="input" />
         </label>

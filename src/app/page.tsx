@@ -2,7 +2,7 @@ import Link from "next/link";
 
 export default function Home() {
   return (
-    <main className="mx-auto flex min-h-screen max-w-sm flex-col items-center justify-center gap-6 px-4 text-center">
+    <main className="page page-narrow items-center text-center">
       <span className="text-2xl tracking-[0.3em] text-accent">♠ ♥ ♦ ♣</span>
       <h1 className="text-4xl font-semibold">TournaPok</h1>
       <p className="text-ink-soft">

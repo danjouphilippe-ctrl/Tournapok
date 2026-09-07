@@ -158,7 +158,7 @@ export function TournoiForm({
   const initialDateTime = splitLocalDateTime(values.scheduledAt);
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-lg flex-col gap-8 px-4 py-12">
+    <main className="page">
       <h1 className="text-2xl font-semibold">{title}</h1>
 
       <form action={formAction} onSubmit={computeScheduledAt} className="flex flex-col gap-8">
@@ -179,7 +179,7 @@ export function TournoiForm({
           <Field label="Description (optionnel)">
             <textarea name="description" rows={2} defaultValue={values.description} className="input" />
           </Field>
-          <div className="flex gap-3">
+          <div className="flex flex-wrap items-end gap-3">
             <Field label="Date (optionnel)">
               <input
                 ref={dateRef}
@@ -201,7 +201,7 @@ export function TournoiForm({
           <Field label="Lieu (optionnel)">
             <input name="location" type="text" defaultValue={values.location} className="input" />
           </Field>
-          <div className="flex gap-3">
+          <div className="flex flex-wrap items-end gap-3">
             <Field label="Joueurs min">
               <input
                 name="min_players"
@@ -270,7 +270,7 @@ export function TournoiForm({
         </Section>
 
         <Section title="Buy-in & tapis de départ">
-          <div className="flex gap-3">
+          <div className="flex flex-wrap items-end gap-3">
             <Field label="Buy-in (€)">
               <input
                 name="buy_in"
@@ -330,7 +330,7 @@ export function TournoiForm({
             onChange={setRebuyEnabled}
           />
           {rebuyEnabled && (
-            <div className="flex flex-wrap gap-3">
+            <div className="flex flex-wrap items-end gap-3">
               <Field label="Nombre max par joueur (vide = illimité)">
                 <input
                   name="rebuy_max_per_player"
@@ -388,7 +388,7 @@ export function TournoiForm({
             onChange={setAddonEnabled}
           />
           {addonEnabled && (
-            <div className="flex flex-wrap gap-3">
+            <div className="flex flex-wrap items-end gap-3">
               <Field label="Prix (€)">
                 <input
                   name="addon_price"
@@ -529,7 +529,7 @@ export function TournoiForm({
         </button>
       </form>
 
-      <Link href={cancelHref} className="link text-sm">
+      <Link href={cancelHref} className="link link-action text-sm">
         Annuler
       </Link>
     </main>
@@ -547,7 +547,9 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <label className="flex flex-1 flex-col gap-1 text-sm">
+    /* min-w-[8rem] : sur un écran de téléphone, trois champs sur une même
+     * ligne deviennent illisibles — mieux vaut qu'ils passent à la ligne. */
+    <label className="flex min-w-[8rem] flex-1 flex-col gap-1 text-sm">
       <span className="font-medium">{label}</span>
       {children}
     </label>

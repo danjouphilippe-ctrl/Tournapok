@@ -59,7 +59,7 @@ export default async function JetonsPage() {
         </ul>
       )}
 
-      <Link href="/tournois" className="link text-sm">
+      <Link href="/tournois" className="link link-action text-sm">
         Retour aux tournois
       </Link>
     </main>

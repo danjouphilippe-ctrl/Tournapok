@@ -53,7 +53,7 @@ export default async function TablesPage({
   const tableNumbers = [...tables.keys()].sort((a, b) => a - b);
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-5xl flex-col gap-6 px-4 py-12">
+    <main className="page page-wide">
       {erreur && (
         <p className="card text-sm text-danger" role="alert">
           {erreur}
@@ -62,15 +62,21 @@ export default async function TablesPage({
 
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h1 className="text-2xl font-semibold">Tables — {tournament.name}</h1>
-        <Link href={`/tournois/${id}`} className="link text-sm">
+        <Link href={`/tournois/${id}`} className="link link-action text-sm">
           Retour au tournoi
         </Link>
       </div>
 
       {tableNumbers.length === 0 ? (
-        <p className="text-sm text-ink-soft">
-          Les tables seront tirées au sort au démarrage du tournoi.
-        </p>
+        <div className="card flex flex-col items-center gap-3 py-14 text-center">
+          <span className="tile-icon tile-icon-teal text-2xl">🪑</span>
+          <p className="text-sm text-ink-soft">
+            Les tables seront tirées au sort au démarrage du tournoi.
+          </p>
+          <Link href={`/tournois/${id}`} className="btn btn-secondary btn-sm">
+            Retour au tournoi
+          </Link>
+        </div>
       ) : (
         <div className="grid grid-cols-1 gap-10 lg:grid-cols-2">
           {tableNumbers.map((tableNumber) => (

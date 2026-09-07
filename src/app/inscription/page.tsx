@@ -10,7 +10,7 @@ export default function InscriptionPage() {
   const [state, formAction, pending] = useActionState(signup, initialState);
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-sm flex-col justify-center gap-6 px-4">
+    <main className="page page-narrow">
       <div>
         <h1 className="text-2xl font-semibold">Créer un compte</h1>
         <p className="text-sm text-ink-soft">

@@ -111,7 +111,7 @@ export default async function ClubsPage({
         </ul>
       )}
 
-      <Link href="/tableau-de-bord" className="link text-sm">
+      <Link href="/tableau-de-bord" className="link link-action text-sm">
         Retour au tableau de bord
       </Link>
     </main>

@@ -93,7 +93,7 @@ export function EventLogoPicker({
             <button
               type="button"
               onClick={() => setSelected("")}
-              className="link-danger self-start text-xs"
+              className="link-danger link-action self-start text-xs"
             >
               Retirer le logo
             </button>

@@ -55,7 +55,7 @@ export function ClubForm({
   const [state, formAction, pending] = useActionState(action, emptyState);
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-lg flex-col gap-8 px-4 py-12">
+    <main className="page">
       <h1 className="text-2xl font-semibold">{title}</h1>
 
       <form action={formAction} className="flex flex-col gap-6">
@@ -119,7 +119,7 @@ export function ClubForm({
         </button>
       </form>
 
-      <Link href={cancelHref} className="link text-sm">
+      <Link href={cancelHref} className="link link-action text-sm">
         Annuler
       </Link>
     </main>

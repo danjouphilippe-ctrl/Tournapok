@@ -13,7 +13,7 @@ export function NouveauJetonForm() {
   const [denominations, setDenominations] = useState<ChipDenominationInput[]>([defaultDenomination()]);
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-lg flex-col gap-6 px-4 py-12">
+    <main className="page">
       <h1 className="text-2xl font-semibold">Créer un jeu de jetons</h1>
 
       <form action={formAction} className="card flex flex-col gap-4">
@@ -49,7 +49,7 @@ export function NouveauJetonForm() {
         </button>
       </form>
 
-      <Link href="/jetons" className="link text-sm">
+      <Link href="/jetons" className="link link-action text-sm">
         Annuler
       </Link>
     </main>

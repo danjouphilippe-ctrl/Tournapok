@@ -96,7 +96,7 @@ export default async function TableauDeBordPage() {
                       Refuser
                     </button>
                   </form>
-                  <Link href={`/tournois/${t.id}`} className="link text-sm">
+                  <Link href={`/tournois/${t.id}`} className="link link-action text-sm">
                     Voir tous les détails
                   </Link>
                 </div>
@@ -116,7 +116,7 @@ export default async function TableauDeBordPage() {
       </div>
 
       <form action={logout} className="flex justify-center">
-        <button type="submit" className="link text-sm">
+        <button type="submit" className="link link-action text-sm">
           Se déconnecter
         </button>
       </form>

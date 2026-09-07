@@ -145,7 +145,20 @@ export default async function EvenementPage({
         </div>
 
         {!tournaments || tournaments.length === 0 ? (
-          <p className="text-sm text-ink-soft">Aucun tournoi pour l&apos;instant.</p>
+          <div className="card flex flex-col items-center gap-3 py-14 text-center">
+            <span className="tile-icon tile-icon-gold text-2xl">♠</span>
+            <p className="text-sm text-ink-soft">
+              Aucun tournoi rattaché à cet évènement pour l&apos;instant.
+            </p>
+            {canManage && (
+              <Link
+                href={`/evenements/${event.id}/tournois/nouveau`}
+                className="btn btn-primary btn-sm"
+              >
+                Créer le premier tournoi
+              </Link>
+            )}
+          </div>
         ) : (
           <ul className="flex flex-col gap-3">
             {tournaments.map((t) => {
@@ -185,7 +198,7 @@ export default async function EvenementPage({
 
       {canManage && (
         <div className="flex items-center justify-between">
-          <Link href={`/evenements/${event.id}/modifier`} className="link text-sm">
+          <Link href={`/evenements/${event.id}/modifier`} className="link link-action text-sm">
             Modifier l&apos;évènement
           </Link>
           {isOrganizer && <DeleteEventButton eventId={event.id} />}
@@ -222,7 +235,7 @@ export default async function EvenementPage({
         )}
       </div>
 
-      <Link href="/evenements" className="link text-sm">
+      <Link href="/evenements" className="link link-action text-sm">
         Retour aux évènements
       </Link>
     </main>

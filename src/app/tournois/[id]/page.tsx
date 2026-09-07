@@ -259,7 +259,7 @@ export default async function TournoiPage({
           <StatutBadge status={tournament.status} />
         </div>
         {parentEvent && (
-          <Link href={`/evenements/${parentEvent.id}`} className="link text-sm w-fit">
+          <Link href={`/evenements/${parentEvent.id}`} className="link link-action text-sm w-fit">
             ↑ Fait partie de : {parentEvent.name}
           </Link>
         )}
@@ -568,7 +568,7 @@ export default async function TournoiPage({
 
       {tournament.status === "inscription" && canManage && (
         <div className="flex items-center justify-between">
-          <Link href={`/tournois/${tournament.id}/modifier`} className="link text-sm">
+          <Link href={`/tournois/${tournament.id}/modifier`} className="link link-action text-sm">
             Modifier le tournoi
           </Link>
           {isOrganizer && <DeleteTournamentButton tournamentId={tournament.id} />}
@@ -686,7 +686,7 @@ export default async function TournoiPage({
                     action={eliminatePlayer.bind(null, tournament.id, p.player_id)}
                     className="flex items-center gap-2"
                   >
-                    <select name="eliminated_by" required className="input text-xs" defaultValue="">
+                    <select name="eliminated_by" required className="input" defaultValue="">
                       <option value="" disabled>
                         Éliminé par...
                       </option>
@@ -707,7 +707,13 @@ export default async function TournoiPage({
             </li>
           ))}
           {active.length === 0 && (
-            <p className="text-sm text-ink-soft">Aucun joueur pour l&apos;instant.</p>
+            <div className="card flex flex-col items-center gap-3 py-12 text-center">
+              <span className="tile-icon tile-icon-success text-2xl">👥</span>
+              <p className="text-sm text-ink-soft">
+                Aucun joueur inscrit pour l&apos;instant.
+                {canManage && canJoin ? " Invite des joueurs ci-dessus pour démarrer." : ""}
+              </p>
+            </div>
           )}
         </ul>
       </div>
@@ -840,7 +846,7 @@ export default async function TournoiPage({
         )}
       </div>
 
-      <Link href="/tournois" className="link text-sm">
+      <Link href="/tournois" className="link link-action text-sm">
         Retour aux tournois
       </Link>
     </main>
@@ -877,7 +883,7 @@ function DisplayConfigForm({
           name="title"
           type="text"
           defaultValue={config.title ?? ""}
-          className="input text-sm"
+          className="input"
         />
       </label>
 

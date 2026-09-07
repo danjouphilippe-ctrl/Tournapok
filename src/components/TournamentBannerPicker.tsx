@@ -89,7 +89,7 @@ export function TournamentBannerPicker({
           {uploading ? "Envoi..." : "Importer une bannière"}
         </button>
         {selected && (
-          <button type="button" onClick={() => setSelected("")} className="link-danger text-xs">
+          <button type="button" onClick={() => setSelected("")} className="link-danger link-action text-xs">
             Retirer la bannière
           </button>
         )}

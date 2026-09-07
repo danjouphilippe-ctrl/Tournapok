@@ -12,7 +12,7 @@ export function DeleteTournamentButton({ tournamentId }: { tournamentId: string 
         }
       }}
     >
-      <button type="submit" className="link-danger text-sm">
+      <button type="submit" className="link-danger link-action text-sm">
         Supprimer le tournoi
       </button>
     </form>

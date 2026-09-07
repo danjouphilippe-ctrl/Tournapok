@@ -27,13 +27,15 @@ export function PseudoAutocomplete({
     }
 
     const query = value.trim();
-    if (!query) {
-      setSuggestions([]);
-      return;
-    }
-
     const supabase = createClient();
+    /* Le vidage se fait dans le timeout, pas dans le corps de l'effet :
+     * un setState synchrone ici déclenche un rendu en cascade. */
     const timeout = setTimeout(async () => {
+      if (!query) {
+        setSuggestions([]);
+        setOpen(false);
+        return;
+      }
       const { data } = await supabase
         .from("profiles")
         .select("id, pseudo, avatar_url")
@@ -66,7 +68,7 @@ export function PseudoAutocomplete({
         onChange={(e) => setValue(e.target.value)}
         onFocus={() => suggestions.length > 0 && setOpen(true)}
         placeholder={placeholder}
-        className={className ?? "input text-sm"}
+        className={className ?? "input"}
       />
       {open && suggestions.length > 0 && (
         <ul className="absolute z-10 mt-1 max-h-48 w-56 overflow-y-auto rounded-md border border-line bg-surface shadow-lg">

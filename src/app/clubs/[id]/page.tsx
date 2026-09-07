@@ -156,7 +156,7 @@ export default async function ClubPage({
                 <ul className="flex flex-col gap-1">
                   {upcomingEvents.map((e) => (
                     <li key={`event-${e.id}`}>
-                      <Link href={`/evenements/${e.id}`} className="link text-sm">
+                      <Link href={`/evenements/${e.id}`} className="link link-action text-sm">
                         {e.name}
                       </Link>{" "}
                       <span className="text-xs text-ink-faint">évènement</span>
@@ -164,7 +164,7 @@ export default async function ClubPage({
                   ))}
                   {upcomingTournaments.map((t) => (
                     <li key={`tournament-${t.id}`}>
-                      <Link href={`/tournois/${t.id}`} className="link text-sm">
+                      <Link href={`/tournois/${t.id}`} className="link link-action text-sm">
                         {t.name}
                       </Link>{" "}
                       <span className="text-xs text-ink-faint">tournoi</span>
@@ -180,7 +180,7 @@ export default async function ClubPage({
                 <ul className="flex flex-col gap-1">
                   {pastEvents.map((e) => (
                     <li key={`event-${e.id}`}>
-                      <Link href={`/evenements/${e.id}`} className="link text-sm">
+                      <Link href={`/evenements/${e.id}`} className="link link-action text-sm">
                         {e.name}
                       </Link>{" "}
                       <span className="text-xs text-ink-faint">évènement</span>
@@ -188,7 +188,7 @@ export default async function ClubPage({
                   ))}
                   {pastTournaments.map((t) => (
                     <li key={`tournament-${t.id}`}>
-                      <Link href={`/tournois/${t.id}`} className="link text-sm">
+                      <Link href={`/tournois/${t.id}`} className="link link-action text-sm">
                         {t.name}
                       </Link>{" "}
                       <span className="text-xs text-ink-faint">tournoi</span>
@@ -260,7 +260,7 @@ export default async function ClubPage({
                 )}
                 {(canManage || m.user_id === user.id) && m.role !== "owner" && (
                   <form action={removeClubMember.bind(null, id, m.user_id)}>
-                    <button type="submit" className="link-danger text-xs">
+                    <button type="submit" className="link-danger link-action text-xs">
                       {m.user_id === user.id ? "Quitter" : "Retirer"}
                     </button>
                   </form>
@@ -290,14 +290,14 @@ export default async function ClubPage({
 
       {canManage && (
         <div className="flex items-center gap-3">
-          <Link href={`/clubs/${id}/modifier`} className="link text-sm">
+          <Link href={`/clubs/${id}/modifier`} className="link link-action text-sm">
             Modifier le club
           </Link>
           {isOwner && <DeleteClubButton clubId={id} />}
         </div>
       )}
 
-      <Link href="/clubs" className="link text-sm">
+      <Link href="/clubs" className="link link-action text-sm">
         Retour aux clubs
       </Link>
     </main>

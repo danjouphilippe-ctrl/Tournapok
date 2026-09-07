@@ -50,6 +50,12 @@ export default async function AffichagePage({
 
   const canManage = tournament.created_by === user.id || !!admin;
 
+  // Graine de l'horloge : le client doit démarrer sur la même valeur que
+  // le HTML rendu par le serveur, sinon React signale un écart
+  // d'hydratation. Il reprend ensuite la main avec son propre timer.
+  // eslint-disable-next-line react-hooks/purity
+  const initialNow = Date.now();
+
   return (
     <AffichageClient
       tournamentId={id}
@@ -58,7 +64,7 @@ export default async function AffichagePage({
       initialPlayers={players ?? []}
       payouts={payouts ?? []}
       canManage={canManage}
-      initialNow={Date.now()}
+      initialNow={initialNow}
     />
   );
 }
