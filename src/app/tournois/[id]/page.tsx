@@ -27,6 +27,7 @@ import { DeleteTournamentButton } from "@/components/DeleteTournamentButton";
 import { PseudoAutocomplete } from "@/components/PseudoAutocomplete";
 import { ConfirmButton } from "@/components/ConfirmButton";
 import { FormattedText } from "@/components/FormattedText";
+import { formatDuration, structureTotals, withElapsed } from "@/lib/blindStructures";
 
 type DisplayConfig = {
   title: string | null;
@@ -196,6 +197,12 @@ export default async function TournoiPage({
     .sort((a, b) => (a.place ?? 0) - (b.place ?? 0));
   const enoughActivePlayers = active.length >= tournament.min_players;
   const allActivePaid = active.length > 0 && active.every((p) => p.buy_in_paid);
+
+  /* Mêmes calculs que sur la fiche d'une structure : le cumul se lit
+   * « à la fin de ce niveau », donc la dernière ligne vaut la durée
+   * totale annoncée au-dessus du tableau. */
+  const levelsWithElapsed = withElapsed(levels);
+  const { total: structureTotal, play: structurePlay } = structureTotals(levels);
 
   const currentLevel = levels.find((l) => l.level_number === tournament.current_level);
   const paidCount = allPlayers.filter((p) => p.buy_in_paid).length;
@@ -764,9 +771,15 @@ export default async function TournoiPage({
 
       {levels.length > 0 && (
         <div>
-          <h2 className="mb-2 font-semibold">Structure de blindes</h2>
+          <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+            <h2 className="font-semibold">Structure de blindes</h2>
+            <div className="flex flex-wrap gap-2">
+              <span className="chip chip-money">⌛ Durée {formatDuration(structureTotal)}</span>
+              <span className="chip chip-money">▶ Jeu {formatDuration(structurePlay)}</span>
+            </div>
+          </div>
           <div className="card overflow-x-auto">
-            <table className="w-full text-sm">
+            <table className="w-full text-sm tabular-nums">
               <thead>
                 <tr className="border-b border-line text-left text-ink-soft">
                   <th className="py-1 pr-2">#</th>
@@ -774,26 +787,46 @@ export default async function TournoiPage({
                   <th className="py-1 pr-2">BB</th>
                   <th className="py-1 pr-2">Ante</th>
                   <th className="py-1 pr-2">Durée</th>
+                  <th className="py-1 pr-2 whitespace-nowrap">Temps cumulé</th>
                 </tr>
               </thead>
               <tbody>
-                {levels.map((l) => (
-                  <tr key={l.level_number} className="border-b border-line/60 last:border-0">
-                    <td className="py-1 pr-2">{l.level_number}</td>
-                    {l.is_break ? (
-                      <td className="py-1 pr-2 text-ink-faint" colSpan={3}>
-                        Pause
+                {levelsWithElapsed.map((l) => {
+                  /* Pendant le tournoi, le niveau en cours est mis en
+                   * avant : c'est ce qui rend la colonne cumulée utile
+                   * en pleine partie — on voit d'un coup où on en est. */
+                  const isCurrent =
+                    tournament.status === "en_cours" &&
+                    l.level_number === tournament.current_level;
+                  return (
+                    <tr
+                      key={l.level_number}
+                      className={`border-b border-line/60 last:border-0${
+                        isCurrent ? " bg-surface-2 font-medium text-ink" : ""
+                      }`}
+                    >
+                      <td className="py-1 pr-2">
+                        {isCurrent && <span className="mr-1 text-accent-strong">▸</span>}
+                        {l.level_number}
                       </td>
-                    ) : (
-                      <>
-                        <td className="py-1 pr-2">{l.small_blind}</td>
-                        <td className="py-1 pr-2">{l.big_blind}</td>
-                        <td className="py-1 pr-2">{l.ante}</td>
-                      </>
-                    )}
-                    <td className="py-1 pr-2">{l.duration_minutes} min</td>
-                  </tr>
-                ))}
+                      {l.is_break ? (
+                        <td className="py-1 pr-2 text-ink-faint" colSpan={3}>
+                          Pause
+                        </td>
+                      ) : (
+                        <>
+                          <td className="py-1 pr-2">{l.small_blind}</td>
+                          <td className="py-1 pr-2">{l.big_blind}</td>
+                          <td className="py-1 pr-2">{l.ante}</td>
+                        </>
+                      )}
+                      <td className="py-1 pr-2">{l.duration_minutes} min</td>
+                      <td className="py-1 pr-2 whitespace-nowrap text-ink-soft">
+                        {formatDuration(l.elapsed)}
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
