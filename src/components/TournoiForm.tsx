@@ -281,7 +281,7 @@ export function TournoiForm({
                 className="input"
               />
             </Field>
-            <Field label="Tapis de départ (jetons)">
+            <Field label="Tapis de départ">
               <input
                 name="starting_stack"
                 type="number"
