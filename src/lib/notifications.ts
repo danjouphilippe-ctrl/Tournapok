@@ -3,7 +3,7 @@ import type { createClient } from "@/lib/supabase/server";
 type Supabase = Awaited<ReturnType<typeof createClient>>;
 
 export type NotificationCounts = {
-  /** Invitations à un tournoi qui m'attendent. */
+  /** Invitations (tournoi et évènement) qui m'attendent. */
   invitations: number;
   /** Demandes d'adhésion à traiter, sur mes tournois et mes clubs. */
   demandes: number;
@@ -27,9 +27,14 @@ export async function getNotificationCounts(
   supabase: Supabase,
   userId: string,
 ): Promise<NotificationCounts> {
-  const [invitations, demandesTournoi, demandesClub] = await Promise.all([
+  const [invitations, invitationsEvenement, demandesTournoi, demandesClub] = await Promise.all([
     supabase
       .from("tournament_invitations")
+      .select("id", { count: "exact", head: true })
+      .eq("invited_user_id", userId)
+      .eq("status", "pending"),
+    supabase
+      .from("event_invitations")
       .select("id", { count: "exact", head: true })
       .eq("invited_user_id", userId)
       .eq("status", "pending"),
@@ -45,7 +50,7 @@ export async function getNotificationCounts(
       .neq("requester_id", userId),
   ]);
 
-  const nbInvitations = invitations.count ?? 0;
+  const nbInvitations = (invitations.count ?? 0) + (invitationsEvenement.count ?? 0);
   const nbDemandes = (demandesTournoi.count ?? 0) + (demandesClub.count ?? 0);
 
   return {

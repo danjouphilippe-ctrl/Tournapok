@@ -168,3 +168,104 @@ export async function removeEventCoAdmin(eventId: string, userId: string) {
 
   revalidatePath(`/evenements/${eventId}`);
 }
+
+/* ============================================================
+ * Invitations à un évènement.
+ *
+ * Un évènement n'a pas de liste de participants : inviter quelqu'un ne
+ * l'inscrit à rien, ça lui rend l'évènement visible (voir la policy de
+ * 0026) pour qu'il découvre le programme sans être invité à chaque
+ * tournoi. Accepter ou refuser ne change donc que le statut — un refus
+ * retirant l'accès.
+ * ============================================================ */
+
+export async function inviteToEvent(eventId: string, formData: FormData) {
+  const supabase = await createClient();
+  const access = await getEventAccess(supabase, eventId);
+  if (!access) return;
+
+  const pseudo = String(formData.get("pseudo") ?? "").trim();
+  if (!pseudo) return;
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("id")
+    .eq("pseudo", pseudo)
+    .maybeSingle();
+
+  if (!profile) {
+    redirect(
+      `/evenements/${eventId}?erreur=${encodeURIComponent("Aucun joueur ne porte ce pseudo.")}`,
+    );
+  }
+
+  const { error } = await supabase.from("event_invitations").insert({
+    event_id: eventId,
+    invited_user_id: profile.id,
+    invited_by: access.userId,
+  });
+
+  if (error) {
+    const message =
+      error.code === "23505" ? "Ce joueur a déjà été invité." : error.message;
+    redirect(`/evenements/${eventId}?erreur=${encodeURIComponent(message)}`);
+  }
+
+  revalidatePath(`/evenements/${eventId}`);
+}
+
+export async function cancelEventInvitation(invitationId: string, eventId: string) {
+  const supabase = await createClient();
+  if (!(await getEventAccess(supabase, eventId))) return;
+
+  const { data, error } = await supabase
+    .from("event_invitations")
+    .delete()
+    .eq("id", invitationId)
+    .select("id");
+
+  if (error || !data || data.length === 0) {
+    redirect(
+      `/evenements/${eventId}?erreur=${encodeURIComponent("Impossible d'annuler cette invitation.")}`,
+    );
+  }
+
+  revalidatePath(`/evenements/${eventId}`);
+}
+
+export async function respondToEventInvitation(invitationId: string, accept: boolean) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) redirect("/connexion");
+
+  const { data: invitation } = await supabase
+    .from("event_invitations")
+    .select("event_id, invited_user_id, status")
+    .eq("id", invitationId)
+    .single();
+
+  if (!invitation || invitation.invited_user_id !== user.id || invitation.status !== "pending") {
+    return;
+  }
+
+  /* .select() derrière l'update : sans lui, une écriture bloquée par
+   * RLS renvoie un succès avec zéro ligne touchée, et l'invitation
+   * resterait en attente sans que personne ne le sache. */
+  const { data, error } = await supabase
+    .from("event_invitations")
+    .update({ status: accept ? "accepted" : "declined" })
+    .eq("id", invitationId)
+    .select("id");
+
+  if (error || !data || data.length === 0) {
+    redirect(
+      `/notifications?erreur=${encodeURIComponent("Impossible de répondre à cette invitation.")}`,
+    );
+  }
+
+  revalidatePath("/notifications");
+  revalidatePath(`/evenements/${invitation.event_id}`);
+  redirect(accept ? `/evenements/${invitation.event_id}` : "/notifications");
+}

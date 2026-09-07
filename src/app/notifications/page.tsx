@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { respondToInvitation, respondToJoinRequest } from "@/app/tournois/actions";
 import { respondToClubJoinRequest } from "@/app/clubs/actions";
+import { respondToEventInvitation } from "@/app/evenements/actions";
 
 function getPseudo(row: { profiles: { pseudo: string }[] | { pseudo: string } | null }) {
   const profiles = row.profiles;
@@ -31,13 +32,22 @@ export default async function NotificationsPage({
   /* Les politiques d'accès des deux tables de demandes renvoient aussi
    * mes propres demandes en attente. On les exclut : ce sont des choses
    * que j'attends, pas des choses que j'ai à traiter. */
-  const [{ data: invitations }, { data: demandesTournoi }, { data: demandesClub }] =
-    await Promise.all([
+  const [
+    { data: invitations },
+    { data: invitationsEvenement },
+    { data: demandesTournoi },
+    { data: demandesClub },
+  ] = await Promise.all([
       supabase
         .from("tournament_invitations")
         .select(
           "id, tournaments(id, name, buy_in, scheduled_at), profiles!tournament_invitations_invited_user_id_fkey(pseudo)",
         )
+        .eq("invited_user_id", user.id)
+        .eq("status", "pending"),
+      supabase
+        .from("event_invitations")
+        .select("id, events(id, name, scheduled_at, location)")
         .eq("invited_user_id", user.id)
         .eq("status", "pending"),
       supabase
@@ -55,8 +65,10 @@ export default async function NotificationsPage({
     ]);
 
   const mesInvitations = invitations ?? [];
+  const mesInvitationsEvenement = invitationsEvenement ?? [];
   const aTraiter = [...(demandesTournoi ?? []), ...(demandesClub ?? [])];
-  const rien = mesInvitations.length === 0 && aTraiter.length === 0;
+  const rien =
+    mesInvitations.length === 0 && mesInvitationsEvenement.length === 0 && aTraiter.length === 0;
 
   return (
     <main className="page">
@@ -78,7 +90,7 @@ export default async function NotificationsPage({
         </div>
       )}
 
-      {mesInvitations.length > 0 && (
+      {(mesInvitations.length > 0 || mesInvitationsEvenement.length > 0) && (
         <div className="card section-accent flex flex-col gap-4">
           <p className="section-eyebrow">
             <span className="dot" />
@@ -117,6 +129,48 @@ export default async function NotificationsPage({
                     </button>
                   </form>
                   <form action={respondToInvitation.bind(null, inv.id, false)}>
+                    <button type="submit" className="pill-btn pill-reject">
+                      Refuser
+                    </button>
+                  </form>
+                </div>
+              </div>
+            );
+          })}
+
+          {mesInvitationsEvenement.map((inv) => {
+            const e = Array.isArray(inv.events) ? inv.events[0] : inv.events;
+            if (!e) return null;
+            return (
+              <div
+                key={inv.id}
+                className="flex flex-col gap-2 border-t border-line pt-3 first:border-none first:pt-0"
+              >
+                <p className="text-sm text-ink-soft">
+                  Tu es invité à l&apos;évènement{" "}
+                  <Link href={`/evenements/${e.id}`} className="link font-medium">
+                    {e.name}
+                  </Link>
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {e.scheduled_at && (
+                    <span className="chip chip-date">
+                      📅{" "}
+                      {new Date(e.scheduled_at).toLocaleDateString("fr-FR", {
+                        timeZone: "Europe/Paris",
+                        dateStyle: "long",
+                      })}
+                    </span>
+                  )}
+                  {e.location && <span className="chip">📍 {e.location}</span>}
+                </div>
+                <div className="flex flex-wrap items-center gap-2">
+                  <form action={respondToEventInvitation.bind(null, inv.id, true)}>
+                    <button type="submit" className="pill-btn pill-approve">
+                      Accepter
+                    </button>
+                  </form>
+                  <form action={respondToEventInvitation.bind(null, inv.id, false)}>
                     <button type="submit" className="pill-btn pill-reject">
                       Refuser
                     </button>

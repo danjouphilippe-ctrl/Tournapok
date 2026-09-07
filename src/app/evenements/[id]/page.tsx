@@ -1,7 +1,12 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { addEventCoAdmin, removeEventCoAdmin } from "@/app/evenements/actions";
+import {
+  addEventCoAdmin,
+  cancelEventInvitation,
+  inviteToEvent,
+  removeEventCoAdmin,
+} from "@/app/evenements/actions";
 import { DeleteEventButton } from "@/components/DeleteEventButton";
 import { PseudoAutocomplete } from "@/components/PseudoAutocomplete";
 import { FormattedText } from "@/components/FormattedText";
@@ -55,6 +60,17 @@ export default async function EvenementPage({
       .eq("event_id", id)
       .order("created_at", { ascending: true }),
   ]);
+
+  /* Invitations en attente : visibles de l'organisateur (pour les gérer)
+   * et de l'invité (la policy filtre déjà). */
+  const { data: invitations } = await supabase
+    .from("event_invitations")
+    .select(
+      "id, invited_user_id, status, profiles!event_invitations_invited_user_id_fkey(pseudo)",
+    )
+    .eq("event_id", id)
+    .eq("status", "pending");
+  const pendingInvitations = invitations ?? [];
 
   const tournamentIds = (tournaments ?? []).map((t) => t.id);
   const { data: playerRows } = await supabase
@@ -203,6 +219,42 @@ export default async function EvenementPage({
             Modifier l&apos;évènement
           </Link>
           {isOrganizer && <DeleteEventButton eventId={event.id} />}
+        </div>
+      )}
+
+      {canManage && (
+        <div className="card section-manage flex flex-col gap-3">
+          <p className="section-eyebrow">
+            <span className="dot" />
+            Inviter à l&apos;évènement
+          </p>
+          <p className="text-sm text-ink-soft">
+            Un invité voit l&apos;évènement et son programme, même s&apos;il est privé. Ça ne
+            l&apos;inscrit à aucun tournoi : chacun se rejoint séparément.
+          </p>
+
+          <form action={inviteToEvent.bind(null, event.id)} className="flex items-center gap-2">
+            <PseudoAutocomplete name="pseudo" placeholder="Pseudo à inviter" />
+            <button type="submit" className="btn btn-secondary btn-sm">
+              Inviter
+            </button>
+          </form>
+
+          {pendingInvitations.length > 0 && (
+            <div className="flex flex-col gap-2 border-t border-line pt-3">
+              <p className="eyebrow">Invitations envoyées</p>
+              {pendingInvitations.map((i) => (
+                <div key={i.id} className="flex items-center justify-between text-sm">
+                  <span>{getPseudo(i)}</span>
+                  <form action={cancelEventInvitation.bind(null, i.id, event.id)}>
+                    <button type="submit" className="link-danger link-action">
+                      Annuler
+                    </button>
+                  </form>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
 
