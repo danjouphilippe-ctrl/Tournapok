@@ -106,6 +106,7 @@ export default async function ModifierTournoiPage({
     payoutPlaces: tournament.payout_places,
     payouts: (payouts ?? []).map((p) => ({ place: p.place, percentage: p.percentage })),
     blindStructureId: tournament.blind_structure_id ?? "",
+    bannerUrl: tournament.banner_url ?? "",
     chipImageUrl: tournament.chip_image_url ?? "",
     chipSetId: tournament.chip_set_id ?? "",
     chipRack,

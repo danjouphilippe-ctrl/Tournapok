@@ -74,6 +74,11 @@ function getEliminatorPseudo(p: { eliminator: { pseudo: string }[] | { pseudo: s
   return Array.isArray(eliminator) ? (eliminator[0]?.pseudo ?? null) : eliminator.pseudo;
 }
 
+function ordinal(place: number) {
+  if (place === 1) return "1er";
+  return `${place}ème`;
+}
+
 function getDenomination(r: {
   chip_denominations: { color: string; value: number }[] | { color: string; value: number } | null;
 }) {
@@ -228,6 +233,15 @@ export default async function TournoiPage({
         </p>
       )}
 
+      {tournament.banner_url && (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={tournament.banner_url}
+          alt=""
+          className="h-40 w-full rounded-lg border border-line object-cover sm:h-56"
+        />
+      )}
+
       <div className="hero-card flex flex-col gap-3">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div className="flex min-w-0 items-center gap-3">
@@ -249,6 +263,7 @@ export default async function TournoiPage({
             ↑ Fait partie de : {parentEvent.name}
           </Link>
         )}
+
         {tournament.description && (
           <p className="text-sm text-ink-soft">
             <FormattedText text={tournament.description} />
@@ -257,38 +272,15 @@ export default async function TournoiPage({
 
         <div className="flex flex-wrap gap-2">
           <span className="chip">👤 Organisé par {organizer?.pseudo ?? "—"}</span>
-          <span className="chip chip-money">💶 Buy-in {tournament.buy_in} €</span>
-          <span className="chip chip-money">🎰 {tournament.starting_stack} jetons</span>
           <span className="chip">
             👥 {tournament.min_players} à {tournament.max_players ?? "∞"} joueurs
           </span>
-          {tournament.scheduled_at && (
-            <span className="chip chip-date">
-              📅{" "}
-              {new Date(tournament.scheduled_at).toLocaleString("fr-FR", {
-                timeZone: "Europe/Paris",
-                dateStyle: "long",
-                timeStyle: "short",
-              })}
-            </span>
-          )}
         </div>
 
-        {tournament.location && (
-          <div className="flex flex-wrap items-center justify-between gap-2 border-t border-line pt-3">
-            <span className="flex items-center gap-2 text-sm text-ink-soft">
-              📍 {tournament.location}
-            </span>
-            <a
-              href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(tournament.location)}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="ext-link"
-            >
-              Voir sur Google Maps ↗
-            </a>
-          </div>
-        )}
+        <div className="flex flex-wrap gap-2">
+          <span className="chip chip-money">💶 Buy-in {tournament.buy_in} €</span>
+          <span className="chip chip-money">🎰 {tournament.starting_stack} jetons</span>
+        </div>
 
         {(tournament.rebuy_enabled ||
           tournament.addon_enabled ||
@@ -316,6 +308,36 @@ export default async function TournoiPage({
             )}
           </div>
         )}
+
+        {(tournament.scheduled_at || tournament.location) && (
+          <div className="flex flex-col gap-2 border-t border-line pt-3">
+            {tournament.scheduled_at && (
+              <span className="chip chip-date w-fit">
+                📅{" "}
+                {new Date(tournament.scheduled_at).toLocaleString("fr-FR", {
+                  timeZone: "Europe/Paris",
+                  dateStyle: "long",
+                  timeStyle: "short",
+                })}
+              </span>
+            )}
+            {tournament.location && (
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <span className="flex items-center gap-2 text-sm text-ink-soft">
+                  📍 {tournament.location}
+                </span>
+                <a
+                  href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(tournament.location)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="ext-link"
+                >
+                  Voir sur Google Maps ↗
+                </a>
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {payouts && payouts.length > 0 && (
@@ -334,7 +356,7 @@ export default async function TournoiPage({
           <ul className="flex flex-wrap gap-2 text-sm">
             {payouts.map((p) => (
               <li key={p.place} className="badge">
-                #{p.place} : {Math.round((prizePool * p.percentage) / 100).toLocaleString("fr-FR")} €
+                {ordinal(p.place)} : {Math.round((prizePool * p.percentage) / 100).toLocaleString("fr-FR")} €
                 <span className="text-ink-faint"> ({p.percentage}%)</span>
               </li>
             ))}

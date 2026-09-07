@@ -46,6 +46,7 @@ export function parseTournamentFields(formData: FormData): ParsedTournamentField
 
   const blindStructureId = String(formData.get("blind_structure_id") ?? "") || null;
   const customLevelsRaw = String(formData.get("custom_levels_json") ?? "[]");
+  const bannerUrl = String(formData.get("banner_url") ?? "").trim() || null;
   const chipImageUrl = String(formData.get("chip_image_url") ?? "").trim() || null;
   const chipSetId = String(formData.get("chip_set_id") ?? "").trim() || null;
   const chipRackRaw = String(formData.get("chip_rack_json") ?? "[]");
@@ -180,6 +181,7 @@ export function parseTournamentFields(formData: FormData): ParsedTournamentField
       guarantee_amount: guaranteeAmount,
       payout_places: payouts.length > 0 ? payouts.length : null,
       blind_structure_id: blindStructureId,
+      banner_url: bannerUrl,
       chip_image_url: chipImageUrl,
       chip_set_id: chipSetId,
       club_id: clubId,

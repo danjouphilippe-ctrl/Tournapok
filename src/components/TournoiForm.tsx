@@ -8,6 +8,7 @@ import { BlindLevelsEditor, defaultLevel } from "@/components/BlindLevelsEditor"
 import { PayoutsEditor } from "@/components/PayoutsEditor";
 import { ChipRackEditor } from "@/components/ChipRackEditor";
 import { TournamentChipPicker } from "@/components/TournamentChipPicker";
+import { TournamentBannerPicker } from "@/components/TournamentBannerPicker";
 import type { StructureLevelInput } from "@/app/structures/actions";
 import type { ChipSetOption } from "@/lib/chipSetOptions";
 
@@ -54,6 +55,7 @@ export type TournoiFormValues = {
   payouts: PayoutInput[];
   blindStructureId: string;
   customLevels: StructureLevelInput[];
+  bannerUrl: string;
   chipImageUrl: string;
   chipSetId: string;
   chipRack: ChipRackEntryInput[];
@@ -91,6 +93,7 @@ const defaultValues: TournoiFormValues = {
   payouts: [],
   blindStructureId: "",
   customLevels: [defaultLevel()],
+  bannerUrl: "",
   chipImageUrl: "",
   chipSetId: "",
   chipRack: [],
@@ -160,6 +163,10 @@ export function TournoiForm({
 
       <form action={formAction} onSubmit={computeScheduledAt} className="flex flex-col gap-8">
         {eventId && <input type="hidden" name="event_id" value={eventId} />}
+
+        <Section title="Bannière du tournoi">
+          <TournamentBannerPicker userId={userId} initialValue={values.bannerUrl} />
+        </Section>
 
         <Section title="Jeton du tournoi">
           <TournamentChipPicker userId={userId} initialValue={values.chipImageUrl} />

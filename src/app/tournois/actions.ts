@@ -40,6 +40,7 @@ export type TournamentRowInput = {
   guarantee_amount: number | null;
   payout_places: number | null;
   blind_structure_id: string | null;
+  banner_url: string | null;
   chip_image_url: string | null;
   chip_set_id: string | null;
   club_id: string | null;
