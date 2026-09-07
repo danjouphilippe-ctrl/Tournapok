@@ -63,6 +63,22 @@ export function averageLevelMinutes(levels: LevelDuration[]) {
   return playing.reduce((sum, l) => sum + l.duration_minutes, 0) / playing.length;
 }
 
+/** Rang de vitesse déduit des niveaux réels, de 1 (lent) à 4 (rapide),
+ * ou 0 quand la structure n'a aucun niveau et qu'on ne peut rien dire.
+ *
+ * Les seuils sont calés sur les structures officielles : l'hyper-turbo
+ * tourne à 5 min par niveau, le turbo à 10, le standard à 20, le
+ * deepstack à 45. Une structure « personnalisée » obtient ainsi une
+ * jauge honnête, alors que son étiquette n'annonce aucune vitesse. */
+export function paceRank(levels: LevelDuration[]) {
+  const avg = averageLevelMinutes(levels);
+  if (!Number.isFinite(avg)) return 0;
+  if (avg <= 7) return 4;
+  if (avg <= 12) return 3;
+  if (avg <= 25) return 2;
+  return 1;
+}
+
 /** Durée totale (pauses comprises) et temps de jeu effectif. */
 export function structureTotals(levels: LevelDuration[]) {
   const total = levels.reduce((sum, l) => sum + l.duration_minutes, 0);

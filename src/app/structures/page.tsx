@@ -5,6 +5,7 @@ import { SpeedGauge } from "@/components/SpeedGauge";
 import {
   averageLevelMinutes,
   formatDuration,
+  paceRank,
   speedClass,
   speedLabel,
   structureTotals,
@@ -99,7 +100,7 @@ export default async function StructuresPage() {
                   className={`card card-link speed-card ${speedClass(s.speed_preset)} flex h-full flex-col gap-3`}
                 >
                   <div className="flex items-center gap-2.5">
-                    <SpeedGauge preset={s.speed_preset} />
+                    <SpeedGauge rank={paceRank(levels)} title={speedLabel(s.speed_preset)} />
                     <span className="min-w-0 wrap-anywhere font-medium">{s.name}</span>
                   </div>
 

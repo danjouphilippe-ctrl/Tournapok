@@ -6,6 +6,7 @@ import { FormattedText } from "@/components/FormattedText";
 import { SpeedGauge } from "@/components/SpeedGauge";
 import {
   formatDuration,
+  paceRank,
   speedClass,
   speedLabel,
   structureTotals,
@@ -79,7 +80,7 @@ export default async function StructureDetailPage({
 
       <div className={`hero-card ${speedClass(structure.speed_preset)} flex flex-col gap-3`}>
         <div className="flex items-center gap-3">
-          <SpeedGauge preset={structure.speed_preset} />
+          <SpeedGauge rank={paceRank(allLevels)} title={speedLabel(structure.speed_preset)} />
           <h1 className="min-w-0 wrap-anywhere text-2xl font-semibold">{structure.name}</h1>
         </div>
         {structure.description && (
