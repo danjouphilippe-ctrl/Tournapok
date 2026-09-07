@@ -12,6 +12,7 @@ import { DeleteClubButton } from "@/components/DeleteClubButton";
 import { PseudoAutocomplete } from "@/components/PseudoAutocomplete";
 import { ClubMemberRoleSelect } from "@/components/ClubMemberRoleSelect";
 import { FormattedText } from "@/components/FormattedText";
+import { byDateAsc, isBeforeNow, isPastTournament } from "@/lib/clubAgenda";
 
 const ROLE_LABELS: Record<string, string> = {
   owner: "Propriétaire",
@@ -24,12 +25,6 @@ function getPseudo(row: { profiles: { pseudo: string }[] | { pseudo: string } | 
   const profiles = row.profiles;
   if (!profiles) return "—";
   return Array.isArray(profiles) ? (profiles[0]?.pseudo ?? "—") : profiles.pseudo;
-}
-
-/** Isolée du composant : un évènement sans date n'est jamais "passé"
- * (mieux vaut l'afficher que le perdre par erreur). */
-function isBeforeNow(scheduledAt: string | null): boolean {
-  return scheduledAt !== null && new Date(scheduledAt).getTime() < Date.now();
 }
 
 export default async function ClubPage({
@@ -84,9 +79,13 @@ export default async function ClubPage({
   const pendingRequests = joinRequests ?? [];
   const myRequest = pendingRequests.find((r) => r.requester_id === user.id);
 
-  const upcomingTournaments = (tournaments ?? []).filter((t) => t.status !== "termine");
-  const pastTournaments = (tournaments ?? []).filter((t) => t.status === "termine");
-  const upcomingEvents = (events ?? []).filter((e) => !isBeforeNow(e.scheduled_at));
+  const upcomingTournaments = (tournaments ?? []).filter((t) => !isPastTournament(t)).sort(byDateAsc);
+  /* Les callbacks sont enveloppés : passer directement une fonction à
+   * .filter() lui transmet (élément, index, tableau), et l'index
+   * atterrissait dans le paramètre `now` — toute date paraissait alors
+   * postérieure à 1970, donc jamais passée. */
+  const pastTournaments = (tournaments ?? []).filter((t) => isPastTournament(t));
+  const upcomingEvents = (events ?? []).filter((e) => !isBeforeNow(e.scheduled_at)).sort(byDateAsc);
   const pastEvents = (events ?? []).filter((e) => isBeforeNow(e.scheduled_at));
 
   return (
