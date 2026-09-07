@@ -151,6 +151,13 @@ input[type="radio"] {
   padding: 1.375rem 1.5rem;
 }
 
+/* Carte dont le contenu touche les bords : une bannière en pleine
+ * largeur en haut, et le padding reporté sur le bloc de texte. */
+.card-flush {
+  padding: 0;
+  overflow: hidden;
+}
+
 .btn {
   display: inline-flex;
   align-items: center;

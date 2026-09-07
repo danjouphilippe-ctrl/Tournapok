@@ -34,7 +34,7 @@ export default async function EvenementsPage() {
 
   return (
     <main className="page page-list">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-2xl font-semibold">Évènements</h1>
         <Link href="/evenements/nouveau" className="btn btn-primary btn-sm">
           + Nouveau
@@ -57,27 +57,40 @@ export default async function EvenementsPage() {
               <li key={e.id}>
                 <Link
                   href={`/evenements/${e.id}`}
-                  className="card card-link flex h-full items-center gap-3"
+                  className="card card-flush card-link flex h-full flex-col"
                 >
+                  {/* Le logo d'évènement est au format 2:1 : il fait office
+                    * de bannière, comme celle d'un tournoi. */}
                   {e.logo_url ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
                       src={e.logo_url}
                       alt=""
-                      className="h-14 w-24 shrink-0 rounded-lg border border-line object-cover"
+                      className="h-28 w-full shrink-0 object-cover sm:h-32"
                     />
                   ) : null}
-                  <div className="flex flex-col gap-1">
-                    <span className="font-medium">{e.name}</span>
-                    <span className="text-sm text-ink-soft">
-                      Par {creatorPseudoById.get(e.created_by) ?? "—"}
-                      {e.location ? ` · 📍 ${e.location}` : ""}
-                      {e.scheduled_at
-                        ? ` · ${new Date(e.scheduled_at).toLocaleDateString("fr-FR", { timeZone: "Europe/Paris" })}`
-                        : ""}
-                      {" · "}
-                      {count} tournoi{count > 1 ? "s" : ""}
-                    </span>
+
+                  <div className="flex flex-col gap-3 p-5">
+                    <span className="wrap-anywhere font-medium">{e.name}</span>
+
+                    <div className="flex flex-wrap gap-2">
+                      <span className="chip">👤 {creatorPseudoById.get(e.created_by) ?? "—"}</span>
+                      {e.scheduled_at && (
+                        <span className="chip chip-date">
+                          📅{" "}
+                          {new Date(e.scheduled_at).toLocaleDateString("fr-FR", {
+                            timeZone: "Europe/Paris",
+                          })}
+                        </span>
+                      )}
+                      {e.location && <span className="chip">📍 {e.location}</span>}
+                    </div>
+
+                    <div>
+                      <span className="badge">
+                        ♠ {count} tournoi{count > 1 ? "s" : ""}
+                      </span>
+                    </div>
                   </div>
                 </Link>
               </li>

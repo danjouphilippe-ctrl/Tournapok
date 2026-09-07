@@ -28,7 +28,7 @@ export default async function TournoisPage() {
 
   const { data: tournaments } = await supabase
     .from("tournaments")
-    .select("id, name, buy_in, status, created_at, created_by, chip_image_url")
+    .select("id, name, buy_in, status, created_at, created_by, chip_image_url, banner_url")
     .order("created_at", { ascending: false });
 
   const creatorIds = [...new Set((tournaments ?? []).map((t) => t.created_by))];
@@ -40,7 +40,7 @@ export default async function TournoisPage() {
 
   return (
     <main className="page page-list">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-2xl font-semibold">Tournois</h1>
         <Link href="/tournois/nouveau" className="btn btn-primary btn-sm">
           + Nouveau
@@ -59,27 +59,46 @@ export default async function TournoisPage() {
         <ul className="list-grid">
           {tournaments.map((t) => (
             <li key={t.id}>
+              {/* Carte empilée plutôt qu'en ligne : sur un téléphone, le nom,
+                * les métadonnées et le statut se disputaient la largeur et le
+                * texte finissait écrasé sur trois lignes. */}
               <Link
                 href={`/tournois/${t.id}`}
-                className="card card-link flex h-full items-center justify-between gap-3"
+                className="card card-flush card-link flex h-full flex-col"
               >
-                <div className="flex items-center gap-3">
-                  {t.chip_image_url ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={t.chip_image_url}
-                      alt=""
-                      className="h-10 w-10 shrink-0 rounded-full border border-line object-cover"
-                    />
-                  ) : null}
-                  <div className="flex flex-col gap-1">
-                    <span className="font-medium">{t.name}</span>
-                    <span className="text-sm text-ink-soft">
-                      Buy-in {t.buy_in}€ · Par {creatorPseudoById.get(t.created_by) ?? "—"}
+                {t.banner_url ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={t.banner_url}
+                    alt=""
+                    className="h-28 w-full shrink-0 object-cover sm:h-32"
+                  />
+                ) : null}
+
+                <div className="flex flex-col gap-3 p-5">
+                  <div className="flex items-center gap-3">
+                    {t.chip_image_url ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={t.chip_image_url}
+                        alt=""
+                        className="h-11 w-11 shrink-0 rounded-full border border-line object-cover"
+                      />
+                    ) : null}
+                    <span className="min-w-0 wrap-anywhere font-medium">{t.name}</span>
+                  </div>
+
+                  <div className="flex flex-wrap gap-2">
+                    <span className="chip">
+                      👤 {creatorPseudoById.get(t.created_by) ?? "—"}
                     </span>
+                    <span className="chip chip-money">💶 Buy-in {t.buy_in} €</span>
+                  </div>
+
+                  <div>
+                    <StatutBadge status={t.status} />
                   </div>
                 </div>
-                <StatutBadge status={t.status} />
               </Link>
             </li>
           ))}

@@ -38,7 +38,7 @@ export default async function StructuresPage() {
 
   return (
     <main className="page page-list">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-2xl font-semibold">Structures de blindes</h1>
         <Link href="/structures/nouvelle" className="btn btn-primary btn-sm">
           + Nouvelle
@@ -61,14 +61,28 @@ export default async function StructuresPage() {
               <li key={s.id}>
                 <Link
                   href={`/structures/${s.id}`}
-                  className="card card-link flex h-full flex-col gap-1"
+                  className="card card-link flex h-full flex-col gap-3"
                 >
-                  <span className="font-medium">{s.name}</span>
-                  <span className="text-sm text-ink-soft">
-                    {s.created_by ? `Par ${getPseudo(s) ?? "un joueur"}` : "Officielle"} ·{" "}
-                    {SPEED_LABELS[s.speed_preset] ?? s.speed_preset}
-                    {stat ? ` · ⭐ ${stat.avg_rating} (${stat.ratings_count})` : " · pas encore noté"}
-                  </span>
+                  <span className="wrap-anywhere font-medium">{s.name}</span>
+
+                  <div className="flex flex-wrap gap-2">
+                    <span className="chip">
+                      👤 {s.created_by ? (getPseudo(s) ?? "un joueur") : "Officielle"}
+                    </span>
+                    <span className="chip">
+                      ⏱ {SPEED_LABELS[s.speed_preset] ?? s.speed_preset}
+                    </span>
+                  </div>
+
+                  <div>
+                    {stat ? (
+                      <span className="badge">
+                        ⭐ {stat.avg_rating} ({stat.ratings_count} avis)
+                      </span>
+                    ) : (
+                      <span className="badge">Pas encore noté</span>
+                    )}
+                  </div>
                 </Link>
               </li>
             );

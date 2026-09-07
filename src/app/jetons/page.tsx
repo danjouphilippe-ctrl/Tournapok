@@ -25,7 +25,7 @@ export default async function JetonsPage() {
 
   return (
     <main className="page page-list">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-2xl font-semibold">Jeux de jetons</h1>
         <Link href="/jetons/nouveau" className="btn btn-primary btn-sm">
           + Nouveau
@@ -45,14 +45,30 @@ export default async function JetonsPage() {
           {chipSets.map((s) => {
             const option = optionsById.get(s.id);
             return (
-              <li key={s.id} className="card flex flex-col gap-1">
-                <span className="font-medium">{option?.name ?? "Jeu de jetons"}</span>
-                <span className="text-sm text-ink-soft">
-                  Par {getPseudo(s) ?? "un joueur"} ·{" "}
-                  {(option?.denominations ?? [])
-                    .map((d) => `${d.color}=${d.value}`)
-                    .join(", ") || "aucune dénomination"}
-                </span>
+              <li key={s.id} className="card flex flex-col gap-3">
+                <span className="wrap-anywhere font-medium">{option?.name ?? "Jeu de jetons"}</span>
+
+                <div className="flex flex-wrap gap-2">
+                  <span className="chip">👤 {getPseudo(s) ?? "un joueur"}</span>
+                  <span className="chip chip-money">
+                    🎰 {(option?.denominations ?? []).length} valeur
+                    {(option?.denominations ?? []).length > 1 ? "s" : ""}
+                  </span>
+                </div>
+
+                <div className="flex flex-wrap gap-2">
+                  {(option?.denominations ?? []).length > 0 ? (
+                    [...(option?.denominations ?? [])]
+                      .sort((a, b) => a.value - b.value)
+                      .map((d, i) => (
+                        <span key={i} className="badge">
+                          {d.color} = {d.value}
+                        </span>
+                      ))
+                  ) : (
+                    <span className="badge">Aucune dénomination</span>
+                  )}
+                </div>
               </li>
             );
           })}

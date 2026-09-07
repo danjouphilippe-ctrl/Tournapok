@@ -16,7 +16,7 @@ export default async function ClubsPage({
 
   let query = supabase
     .from("clubs")
-    .select("id, name, description, location, address, logo_url, created_by");
+    .select("id, name, description, location, address, logo_url, banner_url, visibility, created_by");
 
   const term = q?.trim();
   if (term) {
@@ -45,7 +45,7 @@ export default async function ClubsPage({
 
   return (
     <main className="page page-list">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-2xl font-semibold">Clubs</h1>
         <Link href="/clubs/nouveau" className="btn btn-primary btn-sm">
           + Nouveau
@@ -85,24 +85,43 @@ export default async function ClubsPage({
               <li key={c.id}>
                 <Link
                   href={`/clubs/${c.id}`}
-                  className="card card-link flex h-full items-center gap-3"
+                  className="card card-flush card-link flex h-full flex-col"
                 >
-                  {c.logo_url ? (
+                  {c.banner_url ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
-                      src={c.logo_url}
+                      src={c.banner_url}
                       alt=""
-                      className="h-14 w-14 shrink-0 rounded-full border border-line object-cover"
+                      className="h-28 w-full shrink-0 object-cover sm:h-32"
                     />
                   ) : null}
-                  <div className="flex flex-col gap-1">
-                    <span className="font-medium">{c.name}</span>
-                    <span className="text-sm text-ink-soft">
-                      Par {creatorPseudoById.get(c.created_by) ?? "—"}
-                      {c.location ? ` · 📍 ${c.location}` : ""}
-                      {" · "}
-                      {count} membre{count > 1 ? "s" : ""}
-                    </span>
+
+                  <div className="flex flex-col gap-3 p-5">
+                    <div className="flex items-center gap-3">
+                      {c.logo_url ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={c.logo_url}
+                          alt=""
+                          className="h-11 w-11 shrink-0 rounded-full border border-line object-cover"
+                        />
+                      ) : null}
+                      <span className="min-w-0 wrap-anywhere font-medium">{c.name}</span>
+                    </div>
+
+                    <div className="flex flex-wrap gap-2">
+                      <span className="chip">👤 {creatorPseudoById.get(c.created_by) ?? "—"}</span>
+                      {c.location && <span className="chip">📍 {c.location}</span>}
+                      <span className="chip">
+                        👥 {count} membre{count > 1 ? "s" : ""}
+                      </span>
+                    </div>
+
+                    <div>
+                      <span className={`badge${c.visibility === "public" ? " badge-success" : ""}`}>
+                        {c.visibility === "public" ? "🌐 Club public" : "🔒 Club privé"}
+                      </span>
+                    </div>
                   </div>
                 </Link>
               </li>
