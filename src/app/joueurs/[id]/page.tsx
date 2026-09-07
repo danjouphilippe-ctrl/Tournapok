@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { FormattedText } from "@/components/FormattedText";
@@ -83,10 +82,6 @@ export default async function JoueurPage({
           </p>
         </div>
       )}
-
-      <Link href="/tournois" className="link link-action text-sm">
-        Retour aux tournois
-      </Link>
     </main>
   );
 }

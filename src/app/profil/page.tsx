@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { AvatarUploader } from "@/components/AvatarUploader";
@@ -33,10 +32,6 @@ export default async function ProfilPage() {
         age={profile.age}
         bio={profile.bio ?? ""}
       />
-
-      <Link href="/tableau-de-bord" className="link link-action text-sm">
-        Retour au tableau de bord
-      </Link>
     </main>
   );
 }

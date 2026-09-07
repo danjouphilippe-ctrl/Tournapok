@@ -180,10 +180,6 @@ export default async function StructureDetailPage({
           </table>
         </div>
       </div>
-
-      <Link href="/structures" className="link link-action text-sm">
-        Retour aux structures
-      </Link>
     </main>
   );
 }

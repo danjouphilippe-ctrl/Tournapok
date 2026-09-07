@@ -360,10 +360,6 @@ export default async function ClubPage({
           {isOwner && <DeleteClubButton clubId={id} />}
         </div>
       )}
-
-      <Link href="/clubs" className="link link-action text-sm">
-        Retour aux clubs
-      </Link>
     </main>
   );
 }

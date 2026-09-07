@@ -578,6 +578,309 @@ input[type="radio"] {
   border-left-color: var(--color-success);
 }
 
+/* ================================================================
+ * Navigation
+ *
+ * Deux formes pour un même menu, selon la place : colonne latérale à
+ * partir de 64rem, barre du bas plus tiroir en dessous. Le seuil est
+ * celui du reste du système (.page-list, .page-wide).
+ *
+ * Aucune des deux n'apparaît sur l'écran d'affichage d'un tournoi :
+ * c'est une projection de salle. Le composant s'en charge, pas le CSS.
+ * ================================================================ */
+
+.app-side,
+.app-top,
+.app-tabs {
+  display: none;
+}
+
+/* Décalages imposés au contenu par la navigation.
+ *
+ * La hauteur de .page est reprise en conséquence : sans ça, son
+ * min-height de 100dvh s'ajouterait aux marges des barres et toutes les
+ * pages, même courtes, se retrouveraient avec un défilement inutile. */
+.app-main {
+  padding-top: 3rem; /* hauteur de la barre du haut */
+  padding-bottom: 4.25rem; /* hauteur de la barre du bas */
+}
+.app-main .page {
+  min-height: calc(100dvh - 7.25rem);
+}
+
+@media (min-width: 64rem) {
+  .app-main {
+    padding-top: 0;
+    padding-bottom: 0;
+    padding-left: 15rem; /* largeur de la colonne latérale */
+  }
+  .app-main .page {
+    min-height: 100dvh;
+  }
+}
+
+/* ---------- barre du haut (téléphone et tablette) ---------- */
+.app-top {
+  /* Pas de display ici : il est posé par la requête média plus bas,
+     sinon il écraserait le display:none initial. */
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 30;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  height: 3rem;
+  padding: 0 1rem;
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-line);
+}
+.app-top-brand {
+  /* Cliquable : il lui faut la hauteur d'une vraie cible tactile. */
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.75rem;
+  font-family: var(--font-display), ui-serif, serif;
+  font-weight: 700;
+  font-size: 1.05rem;
+  text-decoration: none;
+}
+.app-top-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.app-icbtn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2.75rem;
+  min-height: 2.75rem;
+  border: none;
+  background: none;
+  color: var(--color-ink-soft);
+  font-size: 1.15rem;
+  cursor: pointer;
+  text-decoration: none;
+  border-radius: 0.5rem;
+}
+.app-icbtn:hover {
+  background: var(--color-surface-2);
+  color: var(--color-ink);
+}
+
+/* ---------- barre du bas (téléphone et tablette) ---------- */
+.app-tabs {
+  /* Idem : le display vient de la requête média. */
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 30;
+  background: var(--color-surface);
+  border-top: 1px solid var(--color-line);
+  /* Laisse passer la barre d'accueil des téléphones sans encoche. */
+  padding-bottom: env(safe-area-inset-bottom, 0);
+}
+.app-tab {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.15rem;
+  padding: 0.5rem 0.25rem 0.6rem;
+  font-size: 0.66rem;
+  font-weight: 500;
+  color: var(--color-ink-faint);
+  text-decoration: none;
+  position: relative;
+}
+.app-tab .ic {
+  font-size: 1.15rem;
+  line-height: 1;
+}
+.app-tab.on {
+  color: var(--color-accent-strong);
+}
+.app-tab.on::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 22%;
+  right: 22%;
+  height: 2px;
+  background: var(--color-accent-strong);
+  border-radius: 0 0 2px 2px;
+}
+
+/* ---------- tiroir ---------- */
+.app-drawer {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  background: rgba(0, 0, 0, 0.6);
+}
+.app-drawer-panel {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: min(19rem, 82%);
+  background: var(--color-surface);
+  border-left: 1px solid var(--color-line);
+  padding: 1rem 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  overflow-y: auto;
+}
+.app-drawer-title {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-ink-faint);
+  padding: 0.25rem 0.5rem 0.65rem;
+  margin: 0;
+}
+.app-drawer-item {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  min-height: 2.75rem;
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+  color: var(--color-ink-soft);
+  text-decoration: none;
+  font-size: 0.92rem;
+}
+.app-drawer-item:hover {
+  background: var(--color-surface-2);
+  color: var(--color-ink);
+}
+.app-drawer-item .ic,
+.app-side-item .ic {
+  width: 1.35rem;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+/* ---------- colonne latérale (ordinateur) ---------- */
+.app-side {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  z-index: 30;
+  width: 15rem;
+  background: var(--color-surface);
+  border-right: 1px solid var(--color-line);
+  padding: 1.25rem 0.75rem 1rem;
+  flex-direction: column;
+  gap: 0.15rem;
+  overflow-y: auto;
+}
+.app-side-brand {
+  display: flex;
+  align-items: center;
+  min-height: 2.75rem;
+  font-family: var(--font-display), ui-serif, serif;
+  font-weight: 700;
+  font-size: 1.25rem;
+  text-decoration: none;
+  padding: 0 0.5rem 0.75rem;
+}
+.app-side-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+.app-side-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  min-height: 2.5rem;
+  padding: 0.45rem 0.6rem;
+  border-radius: 0.5rem;
+  color: var(--color-ink-soft);
+  text-decoration: none;
+  font-size: 0.92rem;
+}
+.app-side-item:hover {
+  background: var(--color-surface-2);
+  color: var(--color-ink);
+}
+.app-side-item.on {
+  background: var(--color-surface-2);
+  color: var(--color-ink);
+  font-weight: 600;
+  box-shadow: inset 2px 0 0 var(--color-accent-strong);
+}
+.app-side-foot {
+  margin-top: auto;
+  padding-top: 0.6rem;
+  border-top: 1px solid var(--color-line);
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+/* La déconnexion est un bouton dans un formulaire, pas un lien : on lui
+ * redonne la largeur et l'alignement des entrées voisines. */
+.app-side-quit,
+.app-drawer-quit .app-drawer-item {
+  width: 100%;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+}
+.app-drawer-quit {
+  margin-top: 0.35rem;
+  padding-top: 0.35rem;
+  border-top: 1px solid var(--color-line);
+}
+
+/* Compteur : présent seulement quand il y a quelque chose à faire. */
+.app-badge {
+  margin-left: auto;
+  min-width: 1.25rem;
+  height: 1.25rem;
+  padding: 0 0.35rem;
+  border-radius: 999px;
+  background: var(--color-accent-strong);
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.app-badge-flottant {
+  position: absolute;
+  top: 0.35rem;
+  right: 0.3rem;
+  margin-left: 0;
+}
+
+@media (min-width: 64rem) {
+  .app-side {
+    display: flex;
+  }
+}
+@media (max-width: 63.999rem) {
+  .app-top,
+  .app-tabs {
+    display: flex;
+  }
+}
+
 .page {
   /* width:100% est indispensable : <body> est un conteneur flex en
    * colonne, et les marges auto y annulent l'étirement par défaut. Sans
@@ -614,6 +917,37 @@ input[type="radio"] {
 }
 .page-list {
   max-width: 40rem;
+}
+
+/* Console de gestion d'un tournoi.
+ *
+ * En salle, l'organisateur est souvent sur un portable — parfois avec
+ * l'écran d'affichage projeté à côté. La colonne unique l'obligeait à
+ * faire défiler entre l'horloge et la liste des joueurs alors qu'il a
+ * besoin des deux en même temps.
+ *
+ * Le seuil est à 80rem et non 64rem : la colonne de navigation prend
+ * déjà 15rem, il faut donc une fenêtre large pour que deux colonnes de
+ * contenu restent lisibles. */
+.page-console {
+  max-width: 40rem;
+}
+.console-grid,
+.console-col {
+  display: flex;
+  flex-direction: column;
+  gap: 1.75rem;
+}
+
+@media (min-width: 80rem) {
+  .page-console {
+    max-width: 72rem;
+  }
+  .console-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr);
+    align-items: start;
+  }
 }
 
 /* Une liste de cartes : une colonne sur téléphone et tablette, deux

@@ -98,10 +98,6 @@ export default async function EvenementsPage() {
           })}
         </ul>
       )}
-
-      <Link href="/tableau-de-bord" className="link link-action text-sm">
-        Retour au tableau de bord
-      </Link>
     </main>
   );
 }

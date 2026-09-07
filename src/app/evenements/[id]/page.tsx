@@ -235,10 +235,6 @@ export default async function EvenementPage({
           </form>
         )}
       </div>
-
-      <Link href="/evenements" className="link link-action text-sm">
-        Retour aux évènements
-      </Link>
     </main>
   );
 }

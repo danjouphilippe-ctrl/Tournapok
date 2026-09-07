@@ -132,10 +132,6 @@ export default async function StructuresPage() {
           })}
         </ul>
       )}
-
-      <Link href="/tournois" className="link link-action text-sm">
-        Retour aux tournois
-      </Link>
     </main>
   );
 }
