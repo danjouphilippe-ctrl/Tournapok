@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useActionState } from "react";
 import { updatePassword, type AuthFormState } from "@/app/auth/actions";
 
@@ -54,6 +55,12 @@ export default function ReinitialiserMotDePassePage() {
           {pending ? "Enregistrement..." : "Enregistrer le nouveau mot de passe"}
         </button>
       </form>
+
+      <p className="text-sm text-ink-soft">
+        <Link href="/connexion" className="link link-action">
+          Retour à la connexion
+        </Link>
+      </p>
     </main>
   );
 }

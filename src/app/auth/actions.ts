@@ -4,6 +4,11 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { headers } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
+import {
+  DATE_OUVERTURE,
+  isAllowedSignupEmail,
+  messageErreurInscription,
+} from "@/lib/inscriptions";
 
 async function getSiteOrigin() {
   const h = await headers();
@@ -15,19 +20,6 @@ async function getSiteOrigin() {
 export type AuthFormState = {
   error: string | null;
 };
-
-// Le site est encore en phase de test privée (avant l'évènement du
-// 28/11/2026) : seul le compte du créateur et ses alias +xxx peuvent
-// s'inscrire. Les comptes déjà créés ne sont pas concernés — ce verrou
-// ne s'applique qu'à la création d'un nouveau compte. À retirer une
-// fois le site ouvert aux joueurs du club/de l'évènement.
-function isAllowedSignupEmail(email: string): boolean {
-  const normalized = email.trim().toLowerCase();
-  return (
-    normalized === "danjouphilippe@gmail.com" ||
-    (normalized.startsWith("danjouphilippe+") && normalized.endsWith("@gmail.com"))
-  );
-}
 
 export async function signup(
   _prevState: AuthFormState,
@@ -47,7 +39,7 @@ export async function signup(
   }
   if (!isAllowedSignupEmail(email)) {
     return {
-      error: "Les inscriptions sont fermées pour le moment (site en phase de test privée).",
+      error: `Les inscriptions ouvriront le ${DATE_OUVERTURE}. Le site est en test privé jusque-là.`,
     };
   }
 
@@ -60,10 +52,10 @@ export async function signup(
   });
 
   if (error) {
-    return { error: error.message };
+    return { error: messageErreurInscription(error.message) };
   }
 
-  redirect("/inscription/verifiez-vos-emails");
+  redirect(`/inscription/verifiez-vos-emails?email=${encodeURIComponent(email)}`);
 }
 
 export async function login(
@@ -114,7 +106,7 @@ export async function requestPasswordReset(
 
   // On redirige vers le même message que l'email existe ou non,
   // pour ne pas révéler quels emails sont inscrits sur le site.
-  redirect("/mot-de-passe-oublie/verifiez-vos-emails");
+  redirect(`/mot-de-passe-oublie/verifiez-vos-emails?email=${encodeURIComponent(email)}`);
 }
 
 export async function updatePassword(

@@ -17,8 +17,11 @@ const fraunces = Fraunces({
 });
 
 export const metadata: Metadata = {
-  title: "TournaPok",
-  description: "Gère tes tournois de poker Texas Hold'em.",
+  /* Gabarit : chaque écran nomme son onglet, sans perdre le nom du site.
+   * Jusqu'ici les sept pages du tunnel d'entrée s'annonçaient toutes
+   * « TournaPok », indistinguables dans une barre d'onglets. */
+  title: { default: "TournaPok", template: "%s · TournaPok" },
+  description: "Gère tes tournois de poker Texas Hold'em, de l'inscription au vainqueur.",
 };
 
 export default async function RootLayout({ children }: LayoutProps<"/">) {

@@ -54,12 +54,19 @@ export default function ConnexionPage() {
         </button>
       </form>
 
-      <p className="text-sm text-ink-soft">
-        Pas encore de compte ?{" "}
-        <Link href="/inscription" className="link">
-          S&apos;inscrire
-        </Link>
-      </p>
+      <div className="flex flex-col gap-2 text-sm text-ink-soft">
+        <p>
+          Pas encore de compte ?{" "}
+          <Link href="/inscription" className="link">
+            S&apos;inscrire
+          </Link>
+        </p>
+        <p>
+          <Link href="/" className="link link-action">
+            Retour à l&apos;accueil
+          </Link>
+        </p>
+      </div>
     </main>
   );
 }

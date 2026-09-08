@@ -37,9 +37,18 @@ export default function MotDePasseOubliePage() {
         </button>
       </form>
 
-      <Link href="/connexion" className="link link-action text-sm">
-        Retour à la connexion
-      </Link>
+      <div className="flex flex-col gap-2 text-sm text-ink-soft">
+        <p>
+          <Link href="/connexion" className="link link-action">
+            Retour à la connexion
+          </Link>
+        </p>
+        <p>
+          <Link href="/" className="link link-action">
+            Retour à l&apos;accueil
+          </Link>
+        </p>
+      </div>
     </main>
   );
 }

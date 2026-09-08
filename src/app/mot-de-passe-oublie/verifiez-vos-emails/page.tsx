@@ -1,16 +1,23 @@
-import Link from "next/link";
+import type { Metadata } from "next";
+import { BoiteMail } from "@/components/BoiteMail";
 
-export default function VerifiezVosEmailsPage() {
+export const metadata: Metadata = { title: "Vérifie ta boîte mail" };
+
+export default async function VerifiezVosEmailsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ email?: string }>;
+}) {
+  const { email } = await searchParams;
   return (
-    <main className="page page-narrow text-center">
-      <h1 className="text-2xl font-semibold">Vérifie ta boîte mail</h1>
-      <p className="text-sm text-ink-soft">
-        Si un compte existe avec cette adresse, un lien de réinitialisation vient de lui être
-        envoyé. Clique dessus pour choisir un nouveau mot de passe.
-      </p>
-      <Link href="/connexion" className="link link-action text-sm">
-        Retour à la connexion
-      </Link>
-    </main>
+    /* Le message reste volontairement conditionnel : on répond la même
+     * chose que l'adresse existe ou non, pour ne pas révéler qui est
+     * inscrit sur le site. */
+    <BoiteMail
+      intro="Si un compte existe avec cette adresse, un lien de réinitialisation vient de lui être envoyé. Clique dessus pour choisir un nouveau mot de passe."
+      email={email}
+      relance="/mot-de-passe-oublie"
+      libelleRelance="Redemander un lien"
+    />
   );
 }

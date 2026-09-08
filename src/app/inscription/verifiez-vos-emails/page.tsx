@@ -1,16 +1,20 @@
-import Link from "next/link";
+import type { Metadata } from "next";
+import { BoiteMail } from "@/components/BoiteMail";
 
-export default function VerifiezVosEmailsPage() {
+export const metadata: Metadata = { title: "Vérifie ta boîte mail" };
+
+export default async function VerifiezVosEmailsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ email?: string }>;
+}) {
+  const { email } = await searchParams;
   return (
-    <main className="page page-narrow text-center">
-      <h1 className="text-2xl font-semibold">Vérifie ta boîte mail</h1>
-      <p className="text-sm text-ink-soft">
-        On t&apos;a envoyé un lien de confirmation. Clique dessus pour activer
-        ton compte, puis connecte-toi.
-      </p>
-      <Link href="/connexion" className="link link-action text-sm">
-        Retour à la connexion
-      </Link>
-    </main>
+    <BoiteMail
+      intro="On t'a envoyé un lien de confirmation. Clique dessus pour activer ton compte, puis connecte-toi."
+      email={email}
+      relance="/inscription"
+      libelleRelance="Recommencer l'inscription"
+    />
   );
 }
