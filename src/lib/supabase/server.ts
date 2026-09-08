@@ -1,5 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
+import { cache } from "react";
 
 export async function createClient() {
   const cookieStore = await cookies();
@@ -26,3 +27,22 @@ export async function createClient() {
     },
   );
 }
+
+/** L'utilisateur connecté, ou null.
+ *
+ * `auth.getUser()` est un appel réseau à l'API d'authentification, pas
+ * une lecture du cookie. Le layout le demande pour la navigation, la
+ * page le redemande pour ses propres données : sans mémorisation, tout
+ * affichage paie deux fois le même aller-retour.
+ *
+ * Le cache() de React ne vit que le temps d'un rendu, donc il ne peut
+ * pas servir une session périmée. Les Server Actions gardent
+ * volontairement leur propre appel : une mutation doit vérifier
+ * l'identité pour de bon, pas se fier à ce qu'un rendu a lu avant. */
+export const getUser = cache(async () => {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  return user;
+});

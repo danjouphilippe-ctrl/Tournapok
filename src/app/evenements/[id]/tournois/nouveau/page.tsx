@@ -1,5 +1,5 @@
 import { notFound, redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, getUser } from "@/lib/supabase/server";
 import { createTournament } from "@/app/tournois/actions";
 import { TournoiForm } from "@/components/TournoiForm";
 import { getManagedClubOptions } from "@/lib/clubOptions";
@@ -12,9 +12,7 @@ export default async function NouveauTournoiDansEvenementPage({
 }) {
   const { id } = await params;
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getUser();
   if (!user) redirect("/connexion");
 
   const { data: event } = await supabase.from("events").select("id, created_by").eq("id", id).single();

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, getUser } from "@/lib/supabase/server";
 
 const STATUT_LABELS: Record<string, string> = {
   inscription: "Inscriptions ouvertes",
@@ -21,9 +21,7 @@ function StatutBadge({ status }: { status: string }) {
 
 export default async function TournoisPage() {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getUser();
   if (!user) redirect("/connexion");
 
   const { data: tournaments } = await supabase

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Fraunces, Inter } from "next/font/google";
 import "./globals.css";
 import { AppMain, AppNav } from "@/components/AppNav";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, getUser } from "@/lib/supabase/server";
 import { AUCUNE_NOTIFICATION, getNotificationCounts } from "@/lib/notifications";
 
 const inter = Inter({
@@ -27,9 +27,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
    * écrans qui ne doivent pas en porter (connexion, affichage de
    * salle), en lisant le chemin côté client. */
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getUser();
 
   const [profile, notifications] = user
     ? await Promise.all([

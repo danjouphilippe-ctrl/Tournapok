@@ -1,5 +1,5 @@
 import { notFound, redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, getUser } from "@/lib/supabase/server";
 import { updateClub } from "@/app/clubs/actions";
 import { ClubForm } from "@/components/ClubForm";
 
@@ -10,9 +10,7 @@ export default async function ModifierClubPage({
 }) {
   const { id } = await params;
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getUser();
   if (!user) redirect("/connexion");
 
   const { data: club } = await supabase.from("clubs").select("*").eq("id", id).single();

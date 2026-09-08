@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, getUser } from "@/lib/supabase/server";
 import { NouvelleStructureForm } from "@/app/structures/nouvelle/NouvelleStructureForm";
 
 export default async function NouvelleStructurePage({
@@ -9,9 +9,7 @@ export default async function NouvelleStructurePage({
 }) {
   const { from } = await searchParams;
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getUser();
   if (!user) redirect("/connexion");
 
   if (!from) {

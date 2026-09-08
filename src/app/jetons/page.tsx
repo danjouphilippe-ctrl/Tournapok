@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, getUser } from "@/lib/supabase/server";
 import { getChipSetOptions } from "@/lib/chipSetOptions";
 
 function getPseudo(s: { profiles: { pseudo: string }[] | { pseudo: string } | null }) {
@@ -11,9 +11,7 @@ function getPseudo(s: { profiles: { pseudo: string }[] | { pseudo: string } | nu
 
 export default async function JetonsPage() {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getUser();
   if (!user) redirect("/connexion");
 
   const [{ data: chipSets }, chipSetOptions] = await Promise.all([

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, getUser } from "@/lib/supabase/server";
 import { respondToInvitation, respondToJoinRequest } from "@/app/tournois/actions";
 import { respondToClubJoinRequest } from "@/app/clubs/actions";
 import { respondToEventInvitation } from "@/app/evenements/actions";
@@ -24,9 +24,7 @@ export default async function NotificationsPage({
 }) {
   const { erreur } = await searchParams;
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getUser();
   if (!user) redirect("/connexion");
 
   /* Les politiques d'accès des deux tables de demandes renvoient aussi

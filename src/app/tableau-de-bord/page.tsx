@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, getUser } from "@/lib/supabase/server";
 import { logout } from "@/app/auth/actions";
 import { respondToInvitation } from "@/app/tournois/actions";
 
@@ -15,9 +15,7 @@ const NAV_ITEMS: { href: string; label: string; icon: string; tone: string }[] =
 
 export default async function TableauDeBordPage() {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getUser();
 
   if (!user) {
     redirect("/connexion");

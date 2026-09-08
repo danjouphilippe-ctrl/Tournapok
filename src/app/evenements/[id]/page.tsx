@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, getUser } from "@/lib/supabase/server";
 import {
   addEventCoAdmin,
   cancelEventInvitation,
@@ -40,9 +40,7 @@ export default async function EvenementPage({
   const { id } = await params;
   const { erreur } = await searchParams;
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getUser();
   if (!user) redirect("/connexion");
 
   const { data: event } = await supabase.from("events").select("*").eq("id", id).single();

@@ -1,5 +1,5 @@
 import { notFound, redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, getUser } from "@/lib/supabase/server";
 import { AffichageClient } from "@/app/tournois/[id]/affichage/AffichageClient";
 
 export default async function AffichagePage({
@@ -9,9 +9,7 @@ export default async function AffichagePage({
 }) {
   const { id } = await params;
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getUser();
   if (!user) redirect("/connexion");
 
   const { data: tournament } = await supabase

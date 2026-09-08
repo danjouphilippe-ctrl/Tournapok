@@ -1,14 +1,12 @@
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, getUser } from "@/lib/supabase/server";
 import { createEvent } from "@/app/evenements/actions";
 import { EventForm } from "@/components/EventForm";
 import { getManagedClubOptions } from "@/lib/clubOptions";
 
 export default async function NouvelEvenementPage() {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getUser();
   if (!user) redirect("/connexion");
 
   const clubOptions = await getManagedClubOptions(supabase, user.id);
