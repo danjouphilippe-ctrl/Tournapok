@@ -159,7 +159,7 @@ export default async function TableauDeBordPage() {
   const fil = recentFeed(actualites);
 
   return (
-    <main className="page">
+    <main className="page page-console">
       <div className="hero-card flex items-center gap-4">
         {profile?.avatar_url ? (
           // eslint-disable-next-line @next/next/no-img-element
@@ -231,140 +231,146 @@ export default async function TableauDeBordPage() {
         </div>
       )}
 
-      <section className="flex flex-col gap-3">
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <h2 className="text-lg font-semibold">Mes prochains tournois</h2>
-          <Link href="/tournois" className="link link-action text-sm">
-            Tous les tournois
-          </Link>
+      <div className="console-grid">
+        <div className="console-col">
+          <section className="flex flex-col gap-3">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <h2 className="text-lg font-semibold">Mes prochains tournois</h2>
+              <Link href="/tournois" className="link link-action text-sm">
+                Tous les tournois
+              </Link>
+            </div>
+
+            {tournoisAVenir.length === 0 ? (
+              <div className="card flex flex-col items-center gap-3 py-10 text-center">
+                <span className="tile-icon tile-icon-gold text-2xl">♠</span>
+                <p className="text-sm text-ink-soft">
+                  Tu n&apos;es inscrit à aucun tournoi à venir.
+                </p>
+                <Link href="/tournois" className="btn btn-primary btn-sm">
+                  Trouver un tournoi
+                </Link>
+              </div>
+            ) : (
+              <ul className="flex flex-col gap-3">
+                {tournoisAVenir.map((t) => (
+                  <li key={t.id}>
+                    <Link
+                      href={`/tournois/${t.id}`}
+                      className="card card-flush card-link flex flex-col"
+                    >
+                      {t.banner_url ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={t.banner_url} alt="" className="h-24 w-full shrink-0 object-cover" />
+                      ) : null}
+
+                      <div className="flex flex-col gap-3 p-5">
+                        <div className="flex items-center gap-3">
+                          {t.chip_image_url ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img
+                              src={t.chip_image_url}
+                              alt=""
+                              className="h-10 w-10 shrink-0 rounded-full border border-line object-cover"
+                            />
+                          ) : null}
+                          <span className="min-w-0 wrap-anywhere font-medium">{t.name}</span>
+                        </div>
+
+                        <div className="flex flex-wrap gap-2">
+                          {t.scheduled_at && (
+                            <span className="chip chip-date">📅 {dateTime(t.scheduled_at)}</span>
+                          )}
+                          <span className="chip chip-money">💶 Buy-in {t.buy_in} €</span>
+                          {t.location && <span className="chip">📍 {t.location}</span>}
+                        </div>
+
+                        <div>
+                          <StatutBadge status={t.status} />
+                        </div>
+                      </div>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
         </div>
 
-        {tournoisAVenir.length === 0 ? (
-          <div className="card flex flex-col items-center gap-3 py-10 text-center">
-            <span className="tile-icon tile-icon-gold text-2xl">♠</span>
-            <p className="text-sm text-ink-soft">
-              Tu n&apos;es inscrit à aucun tournoi à venir.
-            </p>
-            <Link href="/tournois" className="btn btn-primary btn-sm">
-              Trouver un tournoi
-            </Link>
-          </div>
-        ) : (
-          <ul className="flex flex-col gap-3">
-            {tournoisAVenir.map((t) => (
-              <li key={t.id}>
-                <Link
-                  href={`/tournois/${t.id}`}
-                  className="card card-flush card-link flex flex-col"
-                >
-                  {t.banner_url ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={t.banner_url} alt="" className="h-24 w-full shrink-0 object-cover" />
-                  ) : null}
+        <div className="console-col">
+          {evenementsAVenir.length > 0 && (
+            <section className="flex flex-col gap-3">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <h2 className="text-lg font-semibold">Mes prochains évènements</h2>
+                <Link href="/evenements" className="link link-action text-sm">
+                  Tous les évènements
+                </Link>
+              </div>
 
-                  <div className="flex flex-col gap-3 p-5">
-                    <div className="flex items-center gap-3">
-                      {t.chip_image_url ? (
+              <ul className="flex flex-col gap-3">
+                {evenementsAVenir.map((e) => (
+                  <li key={e.id}>
+                    <Link href={`/evenements/${e.id}`} className="card card-link flex items-center gap-3">
+                      {e.logo_url ? (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img
-                          src={t.chip_image_url}
+                          src={e.logo_url}
                           alt=""
-                          className="h-10 w-10 shrink-0 rounded-full border border-line object-cover"
+                          className="h-11 w-11 shrink-0 rounded-full border border-line object-cover"
                         />
-                      ) : null}
-                      <span className="min-w-0 wrap-anywhere font-medium">{t.name}</span>
-                    </div>
-
-                    <div className="flex flex-wrap gap-2">
-                      {t.scheduled_at && (
-                        <span className="chip chip-date">📅 {dateTime(t.scheduled_at)}</span>
+                      ) : (
+                        <span className="tile-icon tile-icon-accent shrink-0">📅</span>
                       )}
-                      <span className="chip chip-money">💶 Buy-in {t.buy_in} €</span>
-                      {t.location && <span className="chip">📍 {t.location}</span>}
-                    </div>
+                      <div className="flex min-w-0 flex-col gap-1">
+                        <span className="wrap-anywhere font-medium">{e.name}</span>
+                        <span className="text-sm text-ink-soft wrap-anywhere">
+                          {e.scheduled_at ? dateTime(e.scheduled_at) : "Date à préciser"}
+                          {e.location && ` · 📍 ${e.location}`}
+                        </span>
+                      </div>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
 
-                    <div>
-                      <StatutBadge status={t.status} />
-                    </div>
-                  </div>
+          <section className="flex flex-col gap-3">
+            <h2 className="text-lg font-semibold">Actualités</h2>
+
+            {fil.length === 0 ? (
+              <div className="card flex flex-col items-center gap-3 py-10 text-center">
+                <span className="tile-icon tile-icon-teal text-2xl">📣</span>
+                <p className="text-sm text-ink-soft">
+                  Rien de neuf pour l&apos;instant. Rejoins un club pour suivre ses tournois et ses
+                  évènements ici.
+                </p>
+                <Link href="/clubs" className="btn btn-secondary btn-sm">
+                  Voir les clubs
                 </Link>
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
-
-      {evenementsAVenir.length > 0 && (
-        <section className="flex flex-col gap-3">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <h2 className="text-lg font-semibold">Mes prochains évènements</h2>
-            <Link href="/evenements" className="link link-action text-sm">
-              Tous les évènements
-            </Link>
-          </div>
-
-          <ul className="flex flex-col gap-3">
-            {evenementsAVenir.map((e) => (
-              <li key={e.id}>
-                <Link href={`/evenements/${e.id}`} className="card card-link flex items-center gap-3">
-                  {e.logo_url ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={e.logo_url}
-                      alt=""
-                      className="h-11 w-11 shrink-0 rounded-full border border-line object-cover"
-                    />
-                  ) : (
-                    <span className="tile-icon tile-icon-accent shrink-0">📅</span>
-                  )}
-                  <div className="flex min-w-0 flex-col gap-1">
-                    <span className="wrap-anywhere font-medium">{e.name}</span>
-                    <span className="text-sm text-ink-soft wrap-anywhere">
-                      {e.scheduled_at ? dateTime(e.scheduled_at) : "Date à préciser"}
-                      {e.location && ` · 📍 ${e.location}`}
+              </div>
+            ) : (
+              <div className="card flex flex-col gap-3">
+                {fil.map((a) => (
+                  <Link
+                    key={a.key}
+                    href={a.href}
+                    className="flex items-start gap-3 border-t border-line pt-3 first:border-none first:pt-0"
+                  >
+                    <span aria-hidden className="shrink-0 text-lg leading-6">
+                      {a.icon}
                     </span>
-                  </div>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </section>
-      )}
-
-      <section className="flex flex-col gap-3">
-        <h2 className="text-lg font-semibold">Actualités</h2>
-
-        {fil.length === 0 ? (
-          <div className="card flex flex-col items-center gap-3 py-10 text-center">
-            <span className="tile-icon tile-icon-teal text-2xl">📣</span>
-            <p className="text-sm text-ink-soft">
-              Rien de neuf pour l&apos;instant. Rejoins un club pour suivre ses tournois et ses
-              évènements ici.
-            </p>
-            <Link href="/clubs" className="btn btn-secondary btn-sm">
-              Voir les clubs
-            </Link>
-          </div>
-        ) : (
-          <div className="card flex flex-col gap-3">
-            {fil.map((a) => (
-              <Link
-                key={a.key}
-                href={a.href}
-                className="flex items-start gap-3 border-t border-line pt-3 first:border-none first:pt-0"
-              >
-                <span aria-hidden className="shrink-0 text-lg leading-6">
-                  {a.icon}
-                </span>
-                <span className="min-w-0 flex-1 wrap-anywhere text-sm">{a.text}</span>
-                {a.at && (
-                  <span className="shrink-0 text-xs text-ink-soft">{shortDate(a.at)}</span>
-                )}
-              </Link>
-            ))}
-          </div>
-        )}
-      </section>
+                    <span className="min-w-0 flex-1 wrap-anywhere text-sm">{a.text}</span>
+                    {a.at && (
+                      <span className="shrink-0 text-xs text-ink-soft">{shortDate(a.at)}</span>
+                    )}
+                  </Link>
+                ))}
+              </div>
+            )}
+          </section>
+        </div>
+      </div>
     </main>
   );
 }
