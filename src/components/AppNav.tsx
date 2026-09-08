@@ -74,6 +74,13 @@ export function AppNav({
 
   return (
     <>
+      {/* Premier arrêt au clavier : sans lui, il faut traverser toute la
+        * navigation avant d'atteindre le contenu, sur chaque page. Il
+        * reste hors écran tant qu'il n'a pas le focus. */}
+      <a href="#contenu" className="app-skip">
+        Aller au contenu
+      </a>
+
       {/* ---------- colonne latérale, à partir de 64rem ---------- */}
       <aside className="app-side">
         <Link href="/tableau-de-bord" className="app-side-brand">
@@ -208,5 +215,14 @@ export function AppNav({
  * elle-même pour que les écrans sans menu n'héritent d'aucune marge. */
 export function AppMain({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  return <div className={estSansMenu(pathname) ? undefined : "app-main"}>{children}</div>;
+  if (estSansMenu(pathname)) return <div>{children}</div>;
+
+  /* tabIndex={-1} : sans cible focusable, un navigateur déplace le
+   * défilement mais pas le focus, et la tabulation suivante repartirait
+   * du haut de la navigation. */
+  return (
+    <div id="contenu" tabIndex={-1} className="app-main">
+      {children}
+    </div>
+  );
 }

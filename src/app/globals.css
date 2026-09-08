@@ -595,6 +595,34 @@ input[type="radio"] {
   display: none;
 }
 
+/* Lien d'évitement : hors écran à la souris, premier arrêt au clavier.
+ * On le déplace plutôt que de le masquer — un display:none le retirerait
+ * aussi de l'ordre de tabulation, ce qui le rendrait inutile. */
+.app-skip {
+  position: fixed;
+  top: 0.5rem;
+  left: 0.5rem;
+  z-index: 60;
+  padding: 0.6rem 1rem;
+  border-radius: 0.5rem;
+  background: var(--color-surface-2);
+  border: 1px solid var(--color-line-strong);
+  color: var(--color-ink);
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-decoration: none;
+  transform: translateY(-200%);
+  transition: transform 0.15s;
+}
+.app-skip:focus {
+  transform: translateY(0);
+}
+
+/* La cible reçoit le focus par programme : pas de contour à afficher. */
+#contenu:focus {
+  outline: none;
+}
+
 /* Décalages imposés au contenu par la navigation.
  *
  * La hauteur de .page est reprise en conséquence : sans ça, son
