@@ -1,23 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient, getUser } from "@/lib/supabase/server";
-
-const STATUT_LABELS: Record<string, string> = {
-  inscription: "Inscriptions ouvertes",
-  en_cours: "En cours",
-  termine: "Terminé",
-};
-
-function StatutBadge({ status }: { status: string }) {
-  const label = STATUT_LABELS[status] ?? status;
-  if (status === "en_cours") {
-    return <span className="badge badge-accent">{label}</span>;
-  }
-  if (status === "inscription") {
-    return <span className="badge badge-success">{label}</span>;
-  }
-  return <span className="badge">{label}</span>;
-}
+import { StatutBadge } from "@/components/StatutBadge";
 
 export default async function TournoisPage() {
   const supabase = await createClient();

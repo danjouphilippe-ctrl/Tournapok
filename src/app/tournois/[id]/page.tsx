@@ -28,6 +28,7 @@ import { PseudoAutocomplete } from "@/components/PseudoAutocomplete";
 import { ConfirmButton } from "@/components/ConfirmButton";
 import { FormattedText } from "@/components/FormattedText";
 import { formatDuration, structureTotals, withElapsed } from "@/lib/blindStructures";
+import { ordinal } from "@/lib/format";
 
 type DisplayConfig = {
   title: string | null;
@@ -75,11 +76,6 @@ function getEliminatorPseudo(p: { eliminator: { pseudo: string }[] | { pseudo: s
   const eliminator = p.eliminator;
   if (!eliminator) return null;
   return Array.isArray(eliminator) ? (eliminator[0]?.pseudo ?? null) : eliminator.pseudo;
-}
-
-function ordinal(place: number) {
-  if (place === 1) return "1er";
-  return `${place}ème`;
 }
 
 function getDenomination(r: {
