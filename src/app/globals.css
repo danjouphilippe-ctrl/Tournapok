@@ -1,6 +1,12 @@
 @import "tailwindcss";
 
 :root {
+  /* Le site n'existe qu'en sombre. Sans cette ligne, le navigateur le
+   * croit clair et dessine les contrôles natifs — listes déroulantes,
+   * sélecteurs de date et d'heure, flèches des champs numériques,
+   * barres de défilement — sur un fond blanc. */
+  color-scheme: dark;
+
   --background: #100d0c;
   --foreground: #f7efe9;
   --surface: #1c1514;
@@ -9,6 +15,10 @@
   --line-strong: #503c39;
   --ink-soft: #d3c1b7;
   --ink-faint: #8f7a73;
+  /* Variante éclaircie de --ink-faint, réservée au texte grisé posé sur
+   * --surface-2 : la teinte normale n'y atteint que 4,13:1, sous le
+   * seuil AA. Celle-ci tient 4,74:1 en restant nettement en retrait. */
+  --ink-faint-on-surface: #9a847c;
   --accent: #b23a4a;
   --accent-strong: #cc4757;
   /* Teinte dédiée aux liens : #cc4757 ne donne que 4.25:1 sur le fond,
@@ -132,6 +142,22 @@ input[type="radio"] {
   /* 16px minimum : en dessous, iOS Safari zoome la page à chaque focus. */
   font-size: 1rem;
   transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+/* Le fond de .input est translucide : sur la page il se compose sur le
+ * bordeaux sombre, mais la liste déroulante est dessinée par le système
+ * sur son propre fond. rgba(0,0,0,.18) y devenait un gris clair, sous un
+ * texte crème — illisible. Les options reçoivent donc une couleur pleine.
+ *
+ * color-scheme suffit sur la plupart des navigateurs ; cette règle
+ * rattrape ceux qui laissent l'option hériter du fond de son select. */
+.input option {
+  background-color: var(--surface-2);
+  color: var(--foreground);
+}
+
+.input option:disabled {
+  color: var(--ink-faint-on-surface);
 }
 
 .input::placeholder {
