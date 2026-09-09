@@ -52,3 +52,13 @@ export function playBell() {
   tone(ctx, 660, now, 1.1, 0.35);
   tone(ctx, 990, now, 0.9, 0.18);
 }
+
+/** Clic sec du tirage au sort.
+ *
+ * La hauteur monte à mesure que le brassage ralentit : c'est ce qui fait
+ * entendre la roue qui s'arrête, sans qu'on ait à regarder l'écran. */
+export function playTick(frequency = 560) {
+  const ctx = getContext();
+  if (!ctx) return;
+  tone(ctx, frequency, ctx.currentTime, 0.06, 0.22);
+}

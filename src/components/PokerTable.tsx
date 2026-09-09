@@ -27,7 +27,23 @@ export type Siege = {
  * Le tapis n'est volontairement pas affiché : cet écran répond à « qui
  * est assis où », pas à « qui est devant ». Le détail des tapis vit sur
  * la page du tournoi. */
-export function PokerTable({ tableNumber, seats }: { tableNumber: number; seats: Siege[] }) {
+export function PokerTable({
+  tableNumber,
+  seats,
+  /* Nombre annoncé dans l'en-tête. Se distingue de seats.length pendant
+   * le tirage au sort, où les sièges sont encore vides alors que le
+   * nombre de joueurs, lui, est déjà connu. */
+  nbAnnonce,
+  /* Pendant le brassage, un clic sur un avatar qui passe emmènerait sur
+   * la fiche du joueur — au milieu de l'animation. */
+  fige = false,
+}: {
+  tableNumber: number;
+  seats: Siege[];
+  nbAnnonce?: number;
+  fige?: boolean;
+}) {
+  const total = nbAnnonce ?? seats.length;
   const parSiege = [...seats].sort((a, b) => a.seatNumber - b.seatNumber);
   const dialogue = useRef<HTMLDialogElement>(null);
 
@@ -37,7 +53,7 @@ export function PokerTable({ tableNumber, seats }: { tableNumber: number; seats:
         <h2 className="text-lg font-semibold">Table {tableNumber}</h2>
         <div className="flex items-center gap-3">
           <span className="text-sm text-ink-soft">
-            {seats.length} {seats.length > 1 ? "joueurs" : "joueur"}
+            {total} {total > 1 ? "joueurs" : "joueur"}
           </span>
           {/* Un bouton plutôt que la tuile entière cliquable : les sièges
             * sont déjà des liens vers les joueurs, et rendre le fond
@@ -47,7 +63,7 @@ export function PokerTable({ tableNumber, seats }: { tableNumber: number; seats:
             * bouton : .link-action est déclarée après Tailwind et impose
             * display:inline-flex, ce qui annulait .hidden — le bouton
             * restait visible sur téléphone. */}
-          <span className="hidden sm:inline">
+          <span className={`hidden ${fige ? "" : "sm:inline"}`}>
             <button
               type="button"
               onClick={() => dialogue.current?.showModal()}
@@ -63,7 +79,7 @@ export function PokerTable({ tableNumber, seats }: { tableNumber: number; seats:
         * ovale de 340 px se chevauchent quel que soit le rayon. Une liste
         * dit la même chose sans rien tronquer, et c'est de toute façon
         * sur un portable ou un téléviseur qu'on montre le placement. */}
-      <ol className="flex flex-col gap-2 sm:hidden">
+      <ol className={`flex flex-col gap-2 sm:hidden ${fige ? "pointer-events-none" : ""}`}>
         {parSiege.map((seat) => (
           <li key={seat.playerId}>
             <Link
@@ -80,7 +96,10 @@ export function PokerTable({ tableNumber, seats }: { tableNumber: number; seats:
         ))}
       </ol>
 
-      <Ovale seats={parSiege} className="mx-auto hidden w-full max-w-xl sm:block" />
+      <Ovale
+        seats={parSiege}
+        className={`mx-auto hidden w-full max-w-xl sm:block ${fige ? "pointer-events-none" : ""}`}
+      />
 
       {/* Échap referme nativement. On ajoute le clic sur le fond, comme
         * dans une galerie de photos : c'est le geste qu'on tente

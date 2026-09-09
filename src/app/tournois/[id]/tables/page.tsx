@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { createClient, getUser } from "@/lib/supabase/server";
 import { getManageAccess, startTournament } from "@/app/tournois/actions";
-import { PokerTable } from "@/components/PokerTable";
+import { SalleDeTirage } from "@/components/SalleDeTirage";
 
 function getPseudo(p: { profiles: { pseudo: string; avatar_url: string | null }[] | { pseudo: string; avatar_url: string | null } | null }) {
   const profiles = p.profiles;
@@ -77,29 +77,22 @@ export default async function TablesPage({
           </Link>
         </div>
       ) : (
-        <ul className="grid gap-3 2xl:grid-cols-2">
-          {/* Deux tables de front seulement au-delà de 96rem. La barre
-            * latérale prend 240 px : à 1280 il ne reste que 1040 px, et
-            * deux ovales de 444 px s'y resserrent au point que les
-            * étiquettes recouvrent les avatars voisins. */}
-          {tableNumbers.map((tableNumber) => (
-            <li key={tableNumber}>
-              <PokerTable
-                tableNumber={tableNumber}
-                seats={tables.get(tableNumber)!.map((p) => {
-                  const profile = getPseudo(p);
-                  return {
-                    seatNumber: p.seat_number!,
-                    pseudo: profile.pseudo,
-                    avatarUrl: profile.avatar_url,
-                    stack: p.stack,
-                    playerId: p.player_id,
-                  };
-                })}
-              />
-            </li>
-          ))}
-        </ul>
+        <SalleDeTirage
+          tournamentId={tournament.id}
+          tables={tableNumbers.map((tableNumber) => ({
+            tableNumber,
+            seats: tables.get(tableNumber)!.map((p) => {
+              const profile = getPseudo(p);
+              return {
+                seatNumber: p.seat_number!,
+                pseudo: profile.pseudo,
+                avatarUrl: profile.avatar_url,
+                stack: p.stack,
+                playerId: p.player_id,
+              };
+            }),
+          }))}
+        />
       )}
 
       {tournament.status === "inscription" && canManage && tableNumbers.length > 0 && (
