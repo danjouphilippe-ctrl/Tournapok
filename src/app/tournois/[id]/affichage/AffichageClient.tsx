@@ -14,6 +14,7 @@ import {
 } from "@/app/tournois/actions";
 import { ConfirmButton } from "@/components/ConfirmButton";
 import { playBeep, playBell } from "@/lib/clockSounds";
+import { formatChrono, secondesRestantes } from "@/lib/horloge";
 
 type Level = {
   level_number: number;
@@ -90,16 +91,6 @@ type Tournament = {
     show_payouts: boolean;
   };
 };
-
-function formatDuration(totalSeconds: number) {
-  const s = Math.max(0, Math.round(totalSeconds));
-  const h = Math.floor(s / 3600);
-  const m = Math.floor((s % 3600) / 60);
-  const sec = s % 60;
-  const mm = String(m).padStart(2, "0");
-  const ss = String(sec).padStart(2, "0");
-  return h > 0 ? `${h}:${mm}:${ss}` : `${mm}:${ss}`;
-}
 
 export function AffichageClient({
   tournamentId,
@@ -202,10 +193,10 @@ export function AffichageClient({
   const currentLevel = levels.find((l) => l.level_number === tournament.current_level);
   const nextLevelData = levels.find((l) => l.level_number === tournament.current_level + 1);
 
-  const remainingSeconds =
-    tournament.clock_status === "running" && tournament.level_ends_at
-      ? Math.max(0, (new Date(tournament.level_ends_at).getTime() - now) / 1000)
-      : (tournament.paused_remaining_seconds ?? 0);
+  /* Même calcul que la page de gestion : deux copies auraient fini par
+   * diverger, et un chronomètre qui n'affiche pas la même chose selon
+   * l'écran est pire que pas de chronomètre du tout. */
+  const remainingSeconds = secondesRestantes(tournament, now);
 
   useEffect(() => {
     if (
@@ -477,7 +468,7 @@ export function AffichageClient({
                       : "text-foreground"
                 }`}
               >
-                {formatDuration(remainingSeconds)}
+                {formatChrono(remainingSeconds)}
               </p>
 
               <div className="h-2 w-full max-w-lg shrink-0 overflow-hidden rounded-full bg-surface-2">
@@ -512,7 +503,7 @@ export function AffichageClient({
                   <p className="text-[clamp(0.875rem,2.5vh,1.5rem)] text-ink-soft">
                     Prochaine pause :{" "}
                     <span className="font-semibold text-foreground">
-                      {formatDuration(nextBreakSeconds)}
+                      {formatChrono(nextBreakSeconds)}
                     </span>
                   </p>
                 )}
@@ -522,7 +513,7 @@ export function AffichageClient({
                   <p className="text-[clamp(0.875rem,2.5vh,1.5rem)] text-ink-soft">
                     Fin prévue dans :{" "}
                     <span className="font-semibold text-foreground">
-                      {formatDuration(endSeconds)}
+                      {formatChrono(endSeconds)}
                     </span>
                   </p>
                 )}
@@ -533,7 +524,7 @@ export function AffichageClient({
               {lateRegSeconds !== null && (
                 <Stat
                   label="Fin enr. tardif"
-                  value={lateRegSeconds > 0 ? formatDuration(lateRegSeconds) : "Fermé"}
+                  value={lateRegSeconds > 0 ? formatChrono(lateRegSeconds) : "Fermé"}
                   grow
                 />
               )}

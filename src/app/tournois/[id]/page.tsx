@@ -26,6 +26,7 @@ import {
 import { DeleteTournamentButton } from "@/components/DeleteTournamentButton";
 import { PseudoAutocomplete } from "@/components/PseudoAutocomplete";
 import { ConfirmButton } from "@/components/ConfirmButton";
+import { HorlogeTournoi } from "@/components/HorlogeTournoi";
 import { FormattedText } from "@/components/FormattedText";
 import { formatDuration, structureTotals, withElapsed } from "@/lib/blindStructures";
 import { ordinal } from "@/lib/format";
@@ -233,6 +234,12 @@ export default async function TournoiPage({
     tournament.status === "inscription" ||
     (tournament.status === "en_cours" && tournament.late_registration_enabled);
 
+  /* Graine de l'horloge : le premier rendu client doit partir de la même
+   * valeur que le HTML reçu, sinon React signale un écart d'hydratation.
+   * Le composant reprend ensuite la main avec son propre battement. */
+  // eslint-disable-next-line react-hooks/purity
+  const maintenantInitial = Date.now();
+
   const infosTournoi = (
     <>
         {parentEvent && (
@@ -374,18 +381,28 @@ export default async function TournoiPage({
         <div className="console-col">
         {tournament.status === "en_cours" && currentLevel && (
           <div className="clock-tile">
-            <p className="eyebrow">
-              Niveau {currentLevel.level_number} ·{" "}
-              {tournament.clock_status === "paused" ? "En pause" : "En cours"}
-            </p>
-            {currentLevel.is_break ? (
-              <p className="text-xl font-semibold">Pause ({currentLevel.duration_minutes} min)</p>
-            ) : (
-              <p className="text-xl font-semibold">
-                {currentLevel.small_blind} / {currentLevel.big_blind}
-                {currentLevel.ante > 0 ? ` (ante ${currentLevel.ante})` : ""}
-              </p>
-            )}
+            {/* Le décompte à droite du niveau : l'organisateur pilotait
+              * l'horloge depuis cet écran mais devait ouvrir l'affichage
+              * de salle pour savoir combien de temps il restait. */}
+            <div className="flex flex-wrap items-start justify-between gap-4">
+              <div className="min-w-0">
+                <p className="eyebrow">
+                  Niveau {currentLevel.level_number} ·{" "}
+                  {tournament.clock_status === "paused" ? "En pause" : "En cours"}
+                </p>
+                {currentLevel.is_break ? (
+                  <p className="text-xl font-semibold">
+                    Pause ({currentLevel.duration_minutes} min)
+                  </p>
+                ) : (
+                  <p className="text-xl font-semibold">
+                    {currentLevel.small_blind} / {currentLevel.big_blind}
+                    {currentLevel.ante > 0 ? ` (ante ${currentLevel.ante})` : ""}
+                  </p>
+                )}
+              </div>
+              <HorlogeTournoi etat={tournament} maintenantInitial={maintenantInitial} />
+            </div>
 
             <div className="mt-3 flex flex-wrap gap-2">
               <Link href={`/tournois/${tournament.id}/affichage`} target="_blank" className="ext-link">
