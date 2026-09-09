@@ -29,6 +29,11 @@ import { ConfirmButton } from "@/components/ConfirmButton";
 import { FormattedText } from "@/components/FormattedText";
 import { formatDuration, structureTotals, withElapsed } from "@/lib/blindStructures";
 import { ordinal } from "@/lib/format";
+import {
+  detailsReplies,
+  peutDemarquerBuyIn,
+  peutInscrireUnJoueur,
+} from "@/lib/tournoiPhase";
 
 type DisplayConfig = {
   title: string | null;
@@ -228,39 +233,8 @@ export default async function TournoiPage({
     tournament.status === "inscription" ||
     (tournament.status === "en_cours" && tournament.late_registration_enabled);
 
-  return (
-    <main className="page page-console">
-      {erreur && (
-        <p className="card text-sm text-danger" role="alert">
-          {erreur}
-        </p>
-      )}
-
-      {tournament.banner_url && (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
-          src={tournament.banner_url}
-          alt=""
-          className="h-40 w-full rounded-lg border border-line object-cover sm:h-56"
-        />
-      )}
-
-      <div className="hero-card flex flex-col gap-3">
-        <div className="flex flex-wrap items-start justify-between gap-3">
-          <div className="flex min-w-0 items-center gap-3">
-            {tournament.chip_image_url && (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={tournament.chip_image_url}
-                alt=""
-                className="h-14 w-14 shrink-0 rounded-full border-2 object-cover"
-                style={{ borderColor: "var(--gold-line)" }}
-              />
-            )}
-            <h1 className="min-w-0 wrap-anywhere text-2xl font-semibold">{tournament.name}</h1>
-          </div>
-          <StatutBadge status={tournament.status} />
-        </div>
+  const infosTournoi = (
+    <>
         {parentEvent && (
           <Link href={`/evenements/${parentEvent.id}`} className="link link-action text-sm w-fit">
             ↑ Fait partie de : {parentEvent.name}
@@ -341,6 +315,55 @@ export default async function TournoiPage({
             )}
           </div>
         )}
+    </>
+  );
+
+  return (
+    <main className="page page-console">
+      {erreur && (
+        <p className="card text-sm text-danger" role="alert">
+          {erreur}
+        </p>
+      )}
+
+      {tournament.banner_url && (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={tournament.banner_url}
+          alt=""
+          className="h-40 w-full rounded-lg border border-line object-cover sm:h-56"
+        />
+      )}
+
+      <div className="hero-card flex flex-col gap-3">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div className="flex min-w-0 items-center gap-3">
+            {tournament.chip_image_url && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={tournament.chip_image_url}
+                alt=""
+                className="h-14 w-14 shrink-0 rounded-full border-2 object-cover"
+                style={{ borderColor: "var(--gold-line)" }}
+              />
+            )}
+            <h1 className="min-w-0 wrap-anywhere text-2xl font-semibold">{tournament.name}</h1>
+          </div>
+          <StatutBadge status={tournament.status} />
+        </div>
+        {/* Avant le départ, la fiche se lit d'un bloc. Une fois la partie
+          * lancée, l'écran sert à faire tourner l'horloge et à éliminer :
+          * buy-in, adresse et plan sont repliés, sans être perdus. */}
+        {detailsReplies(tournament) ? (
+          <details className="border-t border-line pt-3">
+            <summary className="cursor-pointer text-sm text-ink-soft">
+              Détails du tournoi
+            </summary>
+            <div className="mt-3 flex flex-col gap-3">{infosTournoi}</div>
+          </details>
+        ) : (
+          infosTournoi
+        )}
       </div>
 
       {/* Sur un portable, la colonne unique oblige à faire défiler entre
@@ -401,16 +424,31 @@ export default async function TournoiPage({
               </div>
             )}
 
-            {canManage && (
-              <form
-                action={addPlayerByPseudo.bind(null, tournament.id)}
-                className="mt-3 flex items-center gap-2 border-t border-line pt-3"
-              >
-                <PseudoAutocomplete name="pseudo" placeholder="Pseudo à inscrire" />
-                <button type="submit" className="btn btn-secondary btn-sm">
-                  + Joueur
-                </button>
-              </form>
+            {/* Ce champ sert aux inscriptions tardives une fois la partie
+              * lancée. On le retire plutôt que de le griser : un champ
+              * désactivé sans explication laisse chercher pourquoi. La
+              * condition reprend à l'identique le garde-fou de la base,
+              * pour ne jamais proposer un geste qu'elle refusera. */}
+            {canManage && peutInscrireUnJoueur(tournament) && (
+              <div className="mt-3 flex flex-col gap-1.5 border-t border-line pt-3">
+                <form
+                  action={addPlayerByPseudo.bind(null, tournament.id)}
+                  className="flex items-center gap-2"
+                >
+                  <PseudoAutocomplete name="pseudo" placeholder="Pseudo à inscrire" />
+                  <button type="submit" className="btn btn-secondary btn-sm">
+                    + Joueur
+                  </button>
+                </form>
+                {tournament.status === "en_cours" && (
+                  <p className="text-xs text-ink-faint">
+                    Inscription tardive
+                    {tournament.late_registration_until_level
+                      ? ` — ouverte jusqu'à la fin du niveau ${tournament.late_registration_until_level}`
+                      : " — ouverte sans limite de niveau"}
+                  </p>
+                )}
+              </div>
             )}
 
             {canManage && (
@@ -588,7 +626,10 @@ export default async function TournoiPage({
                   ) : (
                     <span className="badge">Buy-in non payé</span>
                   )}
-                  {canManage && (
+                  {/* Revenir sur un buy-in encaissé n'a de sens qu'avant le
+                    * départ. « Marquer payé » reste en revanche utile en
+                    * cours de partie : un inscrit tardif arrive impayé. */}
+                  {canManage && (p.buy_in_paid ? peutDemarquerBuyIn(tournament) : true) && (
                     <form action={toggleBuyInPaid.bind(null, tournament.id, p.player_id)}>
                       <button type="submit" className="link text-xs">
                         {p.buy_in_paid ? "Marquer non payé" : "Marquer payé"}
@@ -714,13 +755,17 @@ export default async function TournoiPage({
         <div className="console-col">
         {payouts && payouts.length > 0 && (
           <div className="card section-money">
-            <p className="section-eyebrow">
+            {/* Le titre de la section est « Cagnotte », pas le montant :
+              * l'inverse faisait annoncer « 1 200 € » comme intitulé par
+              * un lecteur d'écran. Le rendu ne change pas, les classes
+              * portent toute la mise en forme. */}
+            <h2 className="section-eyebrow">
               <span className="dot" />
               Cagnotte
-            </p>
-            <h2 className="text-3xl font-semibold" style={{ color: "var(--gold-strong)" }}>
-              {prizePool.toLocaleString("fr-FR")} €
             </h2>
+            <p className="text-3xl font-semibold" style={{ color: "var(--gold-strong)" }}>
+              {prizePool.toLocaleString("fr-FR")} €
+            </p>
             <p className="mb-3 mt-1 text-xs text-ink-faint">
               {paidCount} buy-in{paidCount > 1 ? "s" : ""} payé{paidCount > 1 ? "s" : ""} sur{" "}
               {allPlayers.length} inscrit{allPlayers.length > 1 ? "s" : ""}
