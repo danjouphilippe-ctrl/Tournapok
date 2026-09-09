@@ -52,7 +52,7 @@ export default async function TablesPage({
   const tableNumbers = [...tables.keys()].sort((a, b) => a - b);
 
   return (
-    <main className="page page-wide">
+    <main className="page page-console">
       {erreur && (
         <p className="card text-sm text-danger" role="alert">
           {erreur}
@@ -77,25 +77,30 @@ export default async function TablesPage({
           </Link>
         </div>
       ) : (
-        <div className="grid grid-cols-1 gap-10 lg:grid-cols-2">
+        <ul className="grid gap-3 2xl:grid-cols-2">
+          {/* Deux tables de front seulement au-delà de 96rem. La barre
+            * latérale prend 240 px : à 1280 il ne reste que 1040 px, et
+            * deux ovales de 444 px s'y resserrent au point que les
+            * étiquettes recouvrent les avatars voisins. */}
           {tableNumbers.map((tableNumber) => (
-            <PokerTable
-              key={tableNumber}
-              tableNumber={tableNumber}
-              tableSize={tournament.table_size}
-              seats={tables.get(tableNumber)!.map((p) => {
-                const profile = getPseudo(p);
-                return {
-                  seatNumber: p.seat_number!,
-                  pseudo: profile.pseudo,
-                  avatarUrl: profile.avatar_url,
-                  stack: p.stack,
-                  playerId: p.player_id,
-                };
-              })}
-            />
+            <li key={tableNumber}>
+              <PokerTable
+                tableNumber={tableNumber}
+                tableSize={tournament.table_size}
+                seats={tables.get(tableNumber)!.map((p) => {
+                  const profile = getPseudo(p);
+                  return {
+                    seatNumber: p.seat_number!,
+                    pseudo: profile.pseudo,
+                    avatarUrl: profile.avatar_url,
+                    stack: p.stack,
+                    playerId: p.player_id,
+                  };
+                })}
+              />
+            </li>
           ))}
-        </div>
+        </ul>
       )}
 
       {tournament.status === "inscription" && canManage && tableNumbers.length > 0 && (

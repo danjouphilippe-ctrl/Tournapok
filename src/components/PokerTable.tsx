@@ -1,9 +1,14 @@
 import Link from "next/link";
 
-/** La table ovale et ses sièges disposés en ellipse.
+/** Une table et ses joueurs, dans une tuile.
  *
- * Sorti de la page pour pouvoir être rendu isolément : la page
- * exige une session et de vraies données, ce composant non. */
+ * Sorti de la page pour pouvoir être rendu isolément : la page exige
+ * une session et de vraies données, ce composant non — c'est ce qui
+ * permet de mesurer débordements et chevauchements sans tournoi réel.
+ *
+ * Le tapis n'est volontairement pas affiché ici : cet écran répond à
+ * « qui est assis où », pas à « qui est devant ». Le détail des tapis
+ * vit sur la page du tournoi. */
 export function PokerTable({
   tableNumber,
   tableSize,
@@ -19,103 +24,114 @@ export function PokerTable({
     playerId: string;
   }[];
 }) {
-  return (
-    <div className="flex flex-col items-center gap-3">
-      <p className="eyebrow">Table {tableNumber}</p>
+  const parSiege = [...seats].sort((a, b) => a.seatNumber - b.seatNumber);
 
-      {/* Sur téléphone, l'ellipse est intenable : huit étiquettes
-        * « pseudo · tapis » autour d'un ovale de 340 px se chevauchent et
-        * débordent du cadre, quel que soit le rayon. Une liste dit la
-        * même chose sans rien tronquer. L'ovale reprend la main dès
-        * qu'il y a la place — et c'est de toute façon sur un portable ou
-        * un téléviseur qu'on montre le placement en salle. */}
-      <ol className="flex w-full flex-col gap-2 sm:hidden">
-        {[...seats]
-          .sort((a, b) => a.seatNumber - b.seatNumber)
-          .map((seat) => (
-            <li key={seat.playerId}>
-              <Link
-                href={`/joueurs/${seat.playerId}`}
-                className="card card-link flex items-center gap-3 px-3 py-2"
-              >
-                <span className="w-5 shrink-0 text-center text-xs text-ink-faint">
-                  {seat.seatNumber}
-                </span>
-                {seat.avatarUrl ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={seat.avatarUrl}
-                    alt=""
-                    className="h-9 w-9 shrink-0 rounded-full border-2 border-accent object-cover"
-                  />
-                ) : (
-                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border-2 border-accent bg-surface-2 text-sm font-medium text-ink-soft">
-                    {seat.pseudo.slice(0, 1).toUpperCase()}
-                  </span>
-                )}
-                <span className="min-w-0 flex-1 wrap-anywhere text-sm">{seat.pseudo}</span>
-                {seat.stack != null && (
-                  <span className="shrink-0 text-sm tabular-nums text-ink-soft">
-                    {seat.stack.toLocaleString("fr-FR")}
-                  </span>
-                )}
-              </Link>
-            </li>
-          ))}
+  return (
+    <div className="card flex flex-col gap-4">
+      <div className="flex flex-wrap items-baseline justify-between gap-2">
+        <h2 className="text-lg font-semibold">Table {tableNumber}</h2>
+        <span className="text-sm text-ink-soft">
+          {seats.length} {seats.length > 1 ? "joueurs" : "joueur"}
+        </span>
+      </div>
+
+      {/* Sur téléphone, l'ellipse est intenable : huit sièges autour d'un
+        * ovale de 340 px se chevauchent quel que soit le rayon. Une liste
+        * dit la même chose sans rien tronquer, et c'est de toute façon
+        * sur un portable ou un téléviseur qu'on montre le placement. */}
+      <ol className="flex flex-col gap-2 sm:hidden">
+        {parSiege.map((seat) => (
+          <li key={seat.playerId}>
+            <Link
+              href={`/joueurs/${seat.playerId}`}
+              className="flex items-center gap-3 rounded-lg border border-line px-3 py-2"
+            >
+              <span className="w-5 shrink-0 text-center text-xs tabular-nums text-ink-faint">
+                {seat.seatNumber}
+              </span>
+              <Avatar seat={seat} taille="h-11 w-11" />
+              <span className="min-w-0 flex-1 wrap-anywhere font-medium">{seat.pseudo}</span>
+            </Link>
+          </li>
+        ))}
       </ol>
 
-      <div className="relative hidden aspect-[8/5] w-full max-w-lg sm:block">
+      <div className="relative mx-auto hidden aspect-[8/5] w-full max-w-lg sm:block">
         <div
-          className="absolute inset-[12%] rounded-[50%] border-4 border-line"
+          className="absolute inset-[14%] rounded-[50%] border-4 border-line"
           style={{
             background:
               "radial-gradient(ellipse at center, rgba(138,35,50,0.35), rgba(28,22,21,0.9))",
           }}
         />
+        <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-3xl text-accent opacity-30">
+          ♠
+        </span>
+
         {seats.map((seat) => {
           const angle = ((seat.seatNumber - 1) / tableSize) * 2 * Math.PI - Math.PI / 2;
-          /* Rayon vertical plus court que l'horizontal : à 46 % le siège
-           * du haut débordait sur le titre de la table, son avatar étant
-           * centré sur un point situé à 4 % de la hauteur. */
+          /* Rayon vertical plus court que l'horizontal : sinon le siège
+           * du haut, centré trop près du bord, débordait sur le titre. */
           const left = 50 + 46 * Math.cos(angle);
           const top = 50 + 40 * Math.sin(angle);
           /* L'étiquette est centrée sur le siège, donc aux extrémités
-           * gauche et droite elle sortait du cadre pour moitié — c'est
-           * ce qui coupait « Joueur02 · 20 0… ». Sur les flancs, on la
-           * fait donc partir du centre de l'avatar vers l'intérieur. */
+           * gauche et droite elle sortirait du cadre pour moitié. Sur les
+           * flancs, on la fait partir du centre de l'avatar vers
+           * l'intérieur. */
           const alignement =
             left < 25 ? "translate-x-1/2" : left > 75 ? "-translate-x-1/2" : "";
+          /* L'étiquette se place toujours du côté extérieur de l'ovale :
+           * au-dessus pour les sièges du haut, en dessous pour ceux du
+           * bas. Toujours en dessous, celles des sièges hauts se
+           * serraient contre le tapis et celles du bas venaient
+           * recouvrir l'avatar du voisin. */
+          const enHaut = top < 50;
           return (
             <Link
               key={seat.playerId}
               href={`/joueurs/${seat.playerId}`}
-              className="absolute flex -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-1"
+              className={`absolute flex -translate-x-1/2 -translate-y-1/2 items-center gap-1.5 ${
+                enHaut ? "flex-col-reverse" : "flex-col"
+              }`}
               style={{ left: `${left}%`, top: `${top}%` }}
             >
-              {seat.avatarUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={seat.avatarUrl}
-                  alt={seat.pseudo}
-                  className="h-10 w-10 rounded-full border-2 border-accent object-cover"
-                />
-              ) : (
-                <div className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-accent bg-surface-2 text-sm font-medium text-ink-soft">
-                  {seat.pseudo.slice(0, 1).toUpperCase()}
-                </div>
-              )}
+              <Avatar seat={seat} taille="h-14 w-14" />
               <span
-                className={`whitespace-nowrap rounded-md bg-surface px-1.5 py-0.5 text-[11px] text-ink shadow ${alignement}`}
+                title={seat.pseudo}
+                className={`max-w-[7rem] truncate rounded-md bg-surface-2 px-2 py-0.5 text-xs font-medium text-ink shadow ${alignement}`}
               >
                 {seat.pseudo}
-                {seat.stack != null && (
-                  <span className="text-ink-faint"> · {seat.stack.toLocaleString("fr-FR")}</span>
-                )}
               </span>
             </Link>
           );
         })}
       </div>
     </div>
+  );
+}
+
+function Avatar({
+  seat,
+  taille,
+}: {
+  seat: { pseudo: string; avatarUrl: string | null };
+  taille: string;
+}) {
+  if (seat.avatarUrl) {
+    return (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img
+        src={seat.avatarUrl}
+        alt=""
+        className={`${taille} shrink-0 rounded-full border-2 border-accent object-cover`}
+      />
+    );
+  }
+  return (
+    <span
+      className={`${taille} flex shrink-0 items-center justify-center rounded-full border-2 border-accent bg-surface-2 font-medium text-ink-soft`}
+    >
+      {seat.pseudo.slice(0, 1).toUpperCase()}
+    </span>
   );
 }
