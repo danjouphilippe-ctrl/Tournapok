@@ -88,6 +88,7 @@ type Tournament = {
     show_next_break: boolean;
   /* Ajoutée après coup : absente des tournois plus anciens. */
   show_time_left?: boolean;
+  show_player_actions?: boolean;
     show_payouts: boolean;
   };
 };
@@ -572,7 +573,9 @@ export function AffichageClient({
                     addonEnabled={tournament.addon_enabled}
                     rebuyAllowed={rebuyAllowed}
                     addonAllowed={addonAllowed}
-                    canManage={canManage}
+                    /* Le droit de gérer ne suffit plus : l'organisateur
+                     * choisit si l'écran porte des commandes. */
+                    canManage={canManage && (cfg.show_player_actions ?? true)}
                     others={sortedActive.filter((o) => o.player_id !== p.player_id)}
                     refetch={refetch}
                   />

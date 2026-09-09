@@ -875,6 +875,7 @@ export async function updateDisplayConfig(tournamentId: string, formData: FormDa
     show_prize_pool: formData.get("show_prize_pool") === "on",
     show_next_break: formData.get("show_next_break") === "on",
     show_time_left: formData.get("show_time_left") === "on",
+    show_player_actions: formData.get("show_player_actions") === "on",
     show_payouts: formData.get("show_payouts") === "on",
   };
 

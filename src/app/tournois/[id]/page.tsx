@@ -46,8 +46,9 @@ type DisplayConfig = {
   show_average_stack: boolean;
   show_prize_pool: boolean;
   show_next_break: boolean;
-  /* Ajoutée après coup : absente des tournois plus anciens. */
+  /* Ajoutées après coup : absentes des tournois plus anciens. */
   show_time_left?: boolean;
+  show_player_actions?: boolean;
   show_payouts: boolean;
 };
 
@@ -969,6 +970,11 @@ function DisplayConfigForm({
     { name: "show_next_break", label: "Prochaine pause" },
     { name: "show_time_left", label: "Fin prévue" },
     { name: "show_payouts", label: "Répartition des gains" },
+    /* Décochée, la liste des joueurs reste lisible mais sans commandes :
+     * c'est ce qu'on veut sur un téléviseur de salle, où personne ne
+     * doit pouvoir éliminer un joueur en passant. Cochée, l'écran
+     * devient pilotable — utile sur la tablette de l'organisateur. */
+    { name: "show_player_actions", label: "Boutons sur la liste des joueurs" },
   ];
 
   return (
