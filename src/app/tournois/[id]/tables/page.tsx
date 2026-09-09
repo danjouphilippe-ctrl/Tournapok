@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { createClient, getUser } from "@/lib/supabase/server";
 import { getManageAccess, startTournament } from "@/app/tournois/actions";
+import { PokerTable } from "@/components/PokerTable";
 
 function getPseudo(p: { profiles: { pseudo: string; avatar_url: string | null }[] | { pseudo: string; avatar_url: string | null } | null }) {
   const profiles = p.profiles;
@@ -105,68 +106,5 @@ export default async function TablesPage({
         </form>
       )}
     </main>
-  );
-}
-
-function PokerTable({
-  tableNumber,
-  tableSize,
-  seats,
-}: {
-  tableNumber: number;
-  tableSize: number;
-  seats: {
-    seatNumber: number;
-    pseudo: string;
-    avatarUrl: string | null;
-    stack: number | null;
-    playerId: string;
-  }[];
-}) {
-  return (
-    <div className="flex flex-col items-center gap-3">
-      <p className="eyebrow">Table {tableNumber}</p>
-      <div className="relative aspect-[8/5] w-full max-w-sm">
-        <div
-          className="absolute inset-[12%] rounded-[50%] border-4 border-line"
-          style={{
-            background:
-              "radial-gradient(ellipse at center, rgba(138,35,50,0.35), rgba(28,22,21,0.9))",
-          }}
-        />
-        {seats.map((seat) => {
-          const angle = ((seat.seatNumber - 1) / tableSize) * 2 * Math.PI - Math.PI / 2;
-          const left = 50 + 46 * Math.cos(angle);
-          const top = 50 + 46 * Math.sin(angle);
-          return (
-            <Link
-              key={seat.playerId}
-              href={`/joueurs/${seat.playerId}`}
-              className="absolute flex -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-1"
-              style={{ left: `${left}%`, top: `${top}%` }}
-            >
-              {seat.avatarUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={seat.avatarUrl}
-                  alt={seat.pseudo}
-                  className="h-10 w-10 rounded-full border-2 border-accent object-cover"
-                />
-              ) : (
-                <div className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-accent bg-surface-2 text-sm font-medium text-ink-soft">
-                  {seat.pseudo.slice(0, 1).toUpperCase()}
-                </div>
-              )}
-              <span className="whitespace-nowrap rounded-md bg-surface px-1.5 py-0.5 text-[11px] text-ink shadow">
-                {seat.pseudo}
-                {seat.stack != null && (
-                  <span className="text-ink-faint"> · {seat.stack.toLocaleString("fr-FR")}</span>
-                )}
-              </span>
-            </Link>
-          );
-        })}
-      </div>
-    </div>
   );
 }
