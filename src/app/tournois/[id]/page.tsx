@@ -781,15 +781,17 @@ export default async function TournoiPage({
           </div>
         )}
         {levels.length > 0 && (
-          <div>
-            <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+          <div className="card flex flex-col gap-3">
+            <div className="flex flex-wrap items-center justify-between gap-2">
               <h2 className="font-semibold">Structure de blindes</h2>
               <div className="flex flex-wrap gap-2">
                 <span className="chip chip-money">⌛ Durée {formatDuration(structureTotal)}</span>
                 <span className="chip chip-money">▶ Jeu {formatDuration(structurePlay)}</span>
               </div>
             </div>
-            <div className="card overflow-x-auto">
+            {/* Le défilement reste sur le tableau : porté par la carte, il
+              * aurait rogné le titre et les durées avec lui. */}
+            <div className="overflow-x-auto">
               <table className="w-full text-sm tabular-nums">
                 <thead>
                   <tr className="border-b border-line text-left text-ink-soft">
@@ -845,9 +847,9 @@ export default async function TournoiPage({
         )}
 
         {chipRack && chipRack.length > 0 && (
-          <div>
-            <h2 className="mb-2 font-semibold">Jetons en jeu{chipSet ? ` — ${chipSet.name}` : ""}</h2>
-            <ul className="card flex flex-wrap gap-2 text-sm">
+          <div className="card flex flex-col gap-2">
+            <h2 className="font-semibold">Jetons en jeu{chipSet ? ` — ${chipSet.name}` : ""}</h2>
+            <ul className="flex flex-wrap gap-2 text-sm">
               {chipRack
                 .map((r) => ({ quantity: r.quantity, ...getDenomination(r) }))
                 .sort((a, b) => a.value - b.value)
@@ -860,9 +862,9 @@ export default async function TournoiPage({
           </div>
         )}
 
-        <div>
-          <h2 className="mb-2 font-semibold">Administrateurs</h2>
-          <ul className="card flex flex-col gap-1.5 text-sm">
+        <div className="card flex flex-col gap-2">
+          <h2 className="font-semibold">Administrateurs</h2>
+          <ul className="flex flex-col gap-1.5 text-sm">
             <li>Organisateur : {organizer?.pseudo ?? "—"}</li>
             {allAdmins.map((a) => (
               <li key={a.user_id} className="flex items-center justify-between">
@@ -880,7 +882,7 @@ export default async function TournoiPage({
           {isOrganizer && (
             <form
               action={addCoAdmin.bind(null, tournament.id)}
-              className="mt-2 flex items-center gap-2"
+              className="flex items-center gap-2 border-t border-line pt-2"
             >
               <PseudoAutocomplete name="pseudo" placeholder="Pseudo à nommer co-admin" />
               <button type="submit" className="btn btn-secondary btn-sm">
