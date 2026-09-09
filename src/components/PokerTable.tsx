@@ -2,6 +2,17 @@
 
 import Link from "next/link";
 import { useRef } from "react";
+import { anglesArcEgal } from "@/lib/tableLayout";
+
+/* Géométrie de la table, en pourcentage du cadre.
+ *
+ * L'ovale est décentré vers le haut : les étiquettes pendent sous les
+ * avatars, si bien qu'un ovale centré laissait 20 px de vide en haut et
+ * débordait de 5 à 10 px en bas. Ces quatre points de décalage rendent
+ * l'ensemble optiquement centré dans la tuile. */
+const RAYON = 36;
+const CENTRE_Y = 46;
+const MARGE = 50 - RAYON;
 
 export type Siege = {
   seatNumber: number;
@@ -69,7 +80,7 @@ export function PokerTable({ tableNumber, seats }: { tableNumber: number; seats:
         ))}
       </ol>
 
-      <Ovale seats={parSiege} className="mx-auto hidden w-full max-w-lg sm:block" />
+      <Ovale seats={parSiege} className="mx-auto hidden w-full max-w-xl sm:block" />
 
       {/* Échap referme nativement. On ajoute le clic sur le fond, comme
         * dans une galerie de photos : c'est le geste qu'on tente
@@ -113,32 +124,42 @@ function Ovale({
   className?: string;
   grand?: boolean;
 }) {
+  /* Rapport hauteur/largeur du cadre, donc de l'ellipse : les deux
+   * rayons valent 36 % de leur axe, si bien que l'ovale a exactement la
+   * forme du cadre. Doit suivre la classe aspect-[8/5] ci-dessous. */
+  const angles = anglesArcEgal(seats.length, 5 / 8);
+
   return (
     <div className={`relative aspect-[8/5] ${className ?? ""}`}>
       <div
-        className="absolute inset-[14%] rounded-[50%] border-4 border-line"
+        className="absolute rounded-[50%] border-4 border-line"
         style={{
+          left: `${MARGE}%`,
+          right: `${MARGE}%`,
+          top: `${CENTRE_Y - RAYON}%`,
+          bottom: `${100 - CENTRE_Y - RAYON}%`,
           background:
             "radial-gradient(ellipse at center, rgba(138,35,50,0.35), rgba(28,22,21,0.9))",
         }}
       />
       <span
         aria-hidden
-        className={`absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-accent opacity-30 ${
+        className={`absolute left-1/2 -translate-x-1/2 -translate-y-1/2 text-accent opacity-30 ${
           grand ? "text-6xl" : "text-3xl"
         }`}
+        style={{ top: `${CENTRE_Y}%` }}
       >
         ♠
       </span>
 
       {seats.map((seat, index) => {
-        const angle = (index / seats.length) * 2 * Math.PI - Math.PI / 2;
+        const angle = angles[index];
         /* Même rayon que le tapis (inset 14 % ⇒ 36 %) : les avatars sont
          * ainsi centrés *sur* le bord, tous à cheval de la même façon.
          * Avec 46 % à l'horizontale et 40 % à la verticale, seuls le
          * haut et le bas touchaient le feutre, les côtés flottaient. */
-        const left = 50 + 36 * Math.cos(angle);
-        const top = 50 + 36 * Math.sin(angle);
+        const left = 50 + RAYON * Math.cos(angle);
+        const top = CENTRE_Y + RAYON * Math.sin(angle);
         return (
           <Link
             key={seat.playerId}
