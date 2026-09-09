@@ -25,7 +25,7 @@ export default async function TablesPage({
 
   const { data: tournament } = await supabase
     .from("tournaments")
-    .select("id, name, table_size, status")
+    .select("id, name, status")
     .eq("id", id)
     .single();
 
@@ -86,7 +86,6 @@ export default async function TablesPage({
             <li key={tableNumber}>
               <PokerTable
                 tableNumber={tableNumber}
-                tableSize={tournament.table_size}
                 seats={tables.get(tableNumber)!.map((p) => {
                   const profile = getPseudo(p);
                   return {

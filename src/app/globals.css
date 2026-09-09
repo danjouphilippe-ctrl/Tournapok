@@ -177,6 +177,40 @@ input[type="radio"] {
   padding: 1.375rem 1.5rem;
 }
 
+/* Tuile d'une table : bordure en dégradé, or en haut à gauche vers
+ * bordeaux en bas à droite, comme une lumière rasante sur le tapis.
+ *
+ * Deux dégradés superposés plutôt qu'une simple couleur : le premier
+ * peint le fond jusqu'au bord intérieur (padding-box), le second peint
+ * la bordure elle-même (border-box). C'est le seul moyen d'obtenir une
+ * bordure dégradée sans pseudo-élément ni fond parasite aux angles. */
+.card-table {
+  border: 1px solid transparent;
+  background:
+    linear-gradient(var(--color-surface), var(--color-surface)) padding-box,
+    linear-gradient(150deg, var(--gold-line), var(--color-line) 45%, var(--accent-line))
+      border-box;
+}
+
+/* Table agrandie. <dialog> apporte l'échappement au clavier, le piège
+ * de focus et le fond assombri sans une ligne de JavaScript ; il ne
+ * reste qu'à le placer et l'habiller. */
+.table-dialog {
+  margin: auto;
+  width: min(92vw, 56rem);
+  max-height: 92dvh;
+  overflow: auto;
+  border: 1px solid var(--color-line-strong);
+  border-radius: 1rem;
+  background: var(--color-surface);
+  color: var(--color-foreground);
+  padding: 1.5rem;
+}
+.table-dialog::backdrop {
+  background: rgba(0, 0, 0, 0.72);
+  backdrop-filter: blur(3px);
+}
+
 /* Carte dont le contenu touche les bords : une bannière en pleine
  * largeur en haut, et le padding reporté sur le bloc de texte. */
 .card-flush {
