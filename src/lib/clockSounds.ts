@@ -60,5 +60,5 @@ export function playBell() {
 export function playTick(frequency = 560) {
   const ctx = getContext();
   if (!ctx) return;
-  tone(ctx, frequency, ctx.currentTime, 0.06, 0.22);
+  tone(ctx, frequency, ctx.currentTime, 0.07, 0.45);
 }
