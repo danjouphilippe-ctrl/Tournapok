@@ -192,6 +192,32 @@ input[type="radio"] {
       border-box;
 }
 
+/* Étiquette d'un joueur autour de la table.
+ *
+ * Elle se pose souvent à cheval sur le tapis bordeaux : d'où un fond
+ * opaque et un filet doré, là où .chip, translucide, laisserait passer
+ * le feutre et perdrait toute lisibilité. L'ombre la décolle du tapis. */
+.seat-label {
+  display: block;
+  max-width: 7.5rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  border-radius: 0.5rem;
+  border: 1px solid var(--gold-line);
+  background: var(--color-surface);
+  color: var(--color-foreground);
+  padding: 0.125rem 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.55);
+}
+.seat-label-lg {
+  max-width: 9.5rem;
+  padding: 0.1875rem 0.625rem;
+  font-size: 0.875rem;
+}
+
 /* Table agrandie. <dialog> apporte l'échappement au clavier, le piège
  * de focus et le fond assombri sans une ligne de JavaScript ; il ne
  * reste qu'à le placer et l'habiller. */

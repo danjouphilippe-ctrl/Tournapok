@@ -133,38 +133,37 @@ function Ovale({
 
       {seats.map((seat, index) => {
         const angle = (index / seats.length) * 2 * Math.PI - Math.PI / 2;
-        /* Rayon vertical plus court que l'horizontal : sinon le siège du
-         * haut, centré trop près du bord, déborde sur le titre. */
-        const left = 50 + 46 * Math.cos(angle);
-        const top = 50 + 40 * Math.sin(angle);
-        /* Aux extrémités gauche et droite, l'étiquette centrée sortirait
-         * du cadre pour moitié : on la fait partir du centre de l'avatar
-         * vers l'intérieur. */
-        const alignement = left < 25 ? "translate-x-1/2" : left > 75 ? "-translate-x-1/2" : "";
-        /* L'étiquette se place du côté extérieur de l'ovale. Toujours en
-         * dessous, celles du haut se serraient contre le tapis et celles
-         * du bas recouvraient l'avatar du voisin. */
-        const enHaut = top < 50;
+        /* Même rayon que le tapis (inset 14 % ⇒ 36 %) : les avatars sont
+         * ainsi centrés *sur* le bord, tous à cheval de la même façon.
+         * Avec 46 % à l'horizontale et 40 % à la verticale, seuls le
+         * haut et le bas touchaient le feutre, les côtés flottaient. */
+        const left = 50 + 36 * Math.cos(angle);
+        const top = 50 + 36 * Math.sin(angle);
         return (
           <Link
             key={seat.playerId}
             href={`/joueurs/${seat.playerId}`}
-            className={`absolute flex -translate-x-1/2 -translate-y-1/2 items-center gap-1.5 ${
-              enHaut ? "flex-col-reverse" : "flex-col"
-            }`}
+            /* Le lien a exactement la taille de l'avatar : c'est lui, et
+             * non le bloc avatar + nom, qui doit être centré sur le bord
+             * du tapis. L'étiquette est donc sortie du flux, sinon le
+             * demi-décalage vertical la faisait remonter l'avatar. */
+            className="absolute -translate-x-1/2 -translate-y-1/2"
             style={{ left: `${left}%`, top: `${top}%` }}
           >
-            <span className="relative">
-              <Avatar seat={seat} taille={grand ? "h-20 w-20" : "h-14 w-14"} />
-              <span className="absolute -bottom-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full border border-line bg-surface text-[10px] tabular-nums text-ink-soft">
-                {seat.seatNumber}
-              </span>
+            <Avatar seat={seat} taille={grand ? "h-20 w-20" : "h-14 w-14"} />
+            <span className="absolute -bottom-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full border border-line bg-surface text-[10px] tabular-nums text-ink-soft">
+              {seat.seatNumber}
             </span>
             <span
               title={seat.pseudo}
-              className={`max-w-[7rem] truncate rounded-md bg-surface-2 px-2 py-0.5 font-medium text-ink shadow ${
-                grand ? "text-sm" : "text-xs"
-              } ${alignement}`}
+              /* Toujours centrée sous l'avatar. Le décalage latéral qu'on
+               * appliquait aux sièges de flanc datait d'un rayon de 46 %,
+               * où ils touchaient le bord du cadre ; sur le tapis à 36 %
+               * il ne servait qu'à pousser l'étiquette vers l'intérieur,
+               * donc sur l'avatar du voisin en diagonale. */
+              className={`seat-label absolute left-1/2 top-full mt-1.5 -translate-x-1/2 ${
+                grand ? "seat-label-lg" : ""
+              }`}
             >
               {seat.pseudo}
             </span>
