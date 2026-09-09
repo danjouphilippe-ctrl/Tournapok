@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { dureeTotale, melanger, rythmeDuTirage } from "@/lib/tirageAuSort";
+import { dureeTotale, ETAPES_TIRAGE, melanger, rythmeDuTirage } from "@/lib/tirageAuSort";
 
 describe("rythmeDuTirage", () => {
   it("rend autant de délais que d'étapes", () => {
@@ -25,10 +25,13 @@ describe("rythmeDuTirage", () => {
     expect(rythmeDuTirage(40, 20, 900).every((d) => d > 0)).toBe(true);
   });
 
-  it("tient dans une attente supportable devant une salle", () => {
-    const total = dureeTotale(rythmeDuTirage(24, 55, 640));
-    expect(total).toBeGreaterThan(4000);
-    expect(total).toBeLessThan(9000);
+  /* Le réglage par défaut, celui qu'on voit vraiment : assez long pour
+   * faire durer le suspense devant une salle, assez court pour qu'on ne
+   * se demande pas si l'écran a planté. */
+  it("dure une dizaine de secondes avec les valeurs par défaut", () => {
+    const total = dureeTotale(rythmeDuTirage(ETAPES_TIRAGE));
+    expect(total).toBeGreaterThan(10_000);
+    expect(total).toBeLessThan(12_000);
   });
 });
 

@@ -10,8 +10,15 @@
  * Progression géométrique plutôt que linéaire : à l'oreille comme à
  * l'œil, c'est le *rapport* entre deux intervalles qu'on perçoit, pas
  * leur différence. Une progression linéaire donne un ralentissement qui
- * paraît brutal au début et interminable à la fin. */
-export function rythmeDuTirage(nbEtapes: number, debutMs = 55, finMs = 640): number[] {
+ * paraît brutal au début et interminable à la fin.
+ *
+ * Les valeurs par défaut donnent onze secondes : une première version à
+ * six secondes passait trop vite pour une salle qui regarde. Trente-
+ * quatre brassages plutôt que vingt-quatre, pour que ça reste vif avant
+ * de s'appesantir, et une dernière seconde bien marquée. */
+export const ETAPES_TIRAGE = 34;
+
+export function rythmeDuTirage(nbEtapes: number, debutMs = 50, finMs = 1000): number[] {
   if (nbEtapes <= 0) return [];
   if (nbEtapes === 1) return [finMs];
   const raison = Math.pow(finMs / debutMs, 1 / (nbEtapes - 1));

@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { PokerTable, type Siege } from "@/components/PokerTable";
 import { playBell, playTick } from "@/lib/clockSounds";
-import { melanger, rythmeDuTirage } from "@/lib/tirageAuSort";
+import { ETAPES_TIRAGE, melanger, rythmeDuTirage } from "@/lib/tirageAuSort";
 
 export type TableTiree = { tableNumber: number; seats: Siege[] };
 
@@ -84,7 +84,7 @@ export function SalleDeTirage({
       t.seats.map((s) => ({ tableNumber: t.tableNumber, seatNumber: s.seatNumber })),
     );
     const joueurs = tables.flatMap((t) => t.seats);
-    const rythme = rythmeDuTirage(24);
+    const rythme = rythmeDuTirage(ETAPES_TIRAGE);
 
     setPhaseChoisie("tirage");
     let cumul = 0;
