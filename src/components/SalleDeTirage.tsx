@@ -21,9 +21,15 @@ type Phase = "attente" | "tirage" | "fini";
 export function SalleDeTirage({
   tournamentId,
   tables,
+  /* Vrai au retour d'un nouveau tirage : on rejoue la cérémonie même si
+   * elle a déjà eu lieu sur cet appareil. Sans ça, les nouvelles places
+   * s'afficheraient directement, sans le suspense qu'on venait de
+   * demander. */
+  retire = false,
 }: {
   tournamentId: string;
   tables: TableTiree[];
+  retire?: boolean;
 }) {
   const cle = `tirage-fait-${tournamentId}`;
 
@@ -52,7 +58,7 @@ export function SalleDeTirage({
   const [phaseChoisie, setPhaseChoisie] = useState<Phase | null>(null);
   const [brassage, setBrassage] = useState<TableTiree[] | null>(null);
   const minuteurs = useRef<number[]>([]);
-  const phase: Phase = phaseChoisie ?? (dejaJoue ? "fini" : "attente");
+  const phase: Phase = phaseChoisie ?? (dejaJoue && !retire ? "fini" : "attente");
 
   useEffect(() => () => minuteurs.current.forEach(clearTimeout), []);
 

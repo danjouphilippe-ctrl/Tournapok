@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import type { StructureLevelInput } from "@/app/structures/actions";
 import { initialSeating, rebalanceAfterRemoval, seatNewPlayer, type SeatedPlayer } from "@/lib/tableBalancing";
+import { peutRefaireLeTirage } from "@/lib/tournoiPhase";
 import { assertCanUseClub, getResourceAccess, type ResourceAccess } from "@/lib/resourceAccess";
 import { parseTournamentFields } from "./validation";
 
@@ -610,6 +611,59 @@ export async function prepareTournamentSeating(tournamentId: string) {
 
   revalidatePath(`/tournois/${tournamentId}`);
   redirect(`/tournois/${tournamentId}/tables`);
+}
+
+/** Refait le tirage des places.
+ *
+ * Trois verrous, et chacun a sa raison :
+ *
+ * — Côté serveur, jamais dans le navigateur. Un tirage local donnerait
+ *   un placement différent à chaque personne qui ouvre la page, et
+ *   n'importe qui pourrait recharger jusqu'à tomber sur la table qui
+ *   l'arrange.
+ *
+ * — Réservé à l'organisateur, là où le premier tirage est ouvert aux
+ *   co-administrateurs : refaire un tirage annule un résultat que la
+ *   salle a peut-être déjà vu, ce n'est pas un geste courant.
+ *
+ * — Impossible une fois le tournoi lancé. Les joueurs sont assis, les
+ *   jetons sont sur la table : les déplacer n'aurait aucun sens, et
+ *   l'équilibrage des tables prend le relais à ce stade.
+ */
+export async function redrawTournamentSeating(tournamentId: string) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return;
+
+  const { data: tournament } = await supabase
+    .from("tournaments")
+    .select("status, created_by, min_players, table_size")
+    .eq("id", tournamentId)
+    .single();
+
+  if (!tournament) return;
+
+  const { data: players } = await supabase
+    .from("tournament_players")
+    .select("player_id, buy_in_paid")
+    .eq("tournament_id", tournamentId)
+    .eq("status", "inscrit");
+
+  if (!players || !peutRefaireLeTirage(tournament, user.id, players)) return;
+
+  const seats = initialSeating(
+    players.map((p) => p.player_id),
+    tournament.table_size,
+  );
+  await writeSeating(supabase, tournamentId, seats);
+
+  revalidatePath(`/tournois/${tournamentId}/tables`);
+  // Le paramètre réarme la cérémonie : sans lui, l'écran afficherait
+  // directement les nouvelles places, l'animation ayant déjà été jouée
+  // une fois sur cet appareil.
+  redirect(`/tournois/${tournamentId}/tables?retire=1`);
 }
 
 /** Étape 2 du démarrage : les tables sont déjà tirées (voir

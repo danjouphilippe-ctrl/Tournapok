@@ -3,6 +3,7 @@ import {
   detailsReplies,
   peutDemarquerBuyIn,
   peutInscrireUnJoueur,
+  peutRefaireLeTirage,
   type PhaseTournoi,
 } from "@/lib/tournoiPhase";
 
@@ -72,5 +73,39 @@ describe("detailsReplies", () => {
     expect(detailsReplies({ status: "inscription" })).toBe(false);
     expect(detailsReplies({ status: "en_cours" })).toBe(true);
     expect(detailsReplies({ status: "termine" })).toBe(true);
+  });
+});
+
+describe("peutRefaireLeTirage", () => {
+  const tournoi = { status: "inscription", created_by: "orga", min_players: 3 };
+  const troisPayes = [{ buy_in_paid: true }, { buy_in_paid: true }, { buy_in_paid: true }];
+
+  it("accepte pour l'organisateur, avant le départ, tout le monde ayant payé", () => {
+    expect(peutRefaireLeTirage(tournoi, "orga", troisPayes)).toBe(true);
+  });
+
+  /* Le premier tirage est ouvert aux co-administrateurs ; celui-ci non,
+   * parce qu'il annule un résultat déjà annoncé. */
+  it("refuse à quelqu'un d'autre que l'organisateur", () => {
+    expect(peutRefaireLeTirage(tournoi, "co-admin", troisPayes)).toBe(false);
+  });
+
+  it("refuse une fois le tournoi lancé ou terminé", () => {
+    expect(peutRefaireLeTirage({ ...tournoi, status: "en_cours" }, "orga", troisPayes)).toBe(false);
+    expect(peutRefaireLeTirage({ ...tournoi, status: "termine" }, "orga", troisPayes)).toBe(false);
+  });
+
+  it("refuse en dessous du minimum de joueurs", () => {
+    expect(peutRefaireLeTirage(tournoi, "orga", troisPayes.slice(0, 2))).toBe(false);
+  });
+
+  it("accepte pile au minimum de joueurs", () => {
+    expect(peutRefaireLeTirage({ ...tournoi, min_players: 3 }, "orga", troisPayes)).toBe(true);
+  });
+
+  it("refuse si un seul buy-in manque", () => {
+    expect(
+      peutRefaireLeTirage(tournoi, "orga", [...troisPayes.slice(0, 2), { buy_in_paid: false }]),
+    ).toBe(false);
   });
 });

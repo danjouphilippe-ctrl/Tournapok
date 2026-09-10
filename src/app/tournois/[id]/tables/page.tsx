@@ -1,7 +1,13 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { createClient, getUser } from "@/lib/supabase/server";
-import { getManageAccess, startTournament } from "@/app/tournois/actions";
+import {
+  getManageAccess,
+  redrawTournamentSeating,
+  startTournament,
+} from "@/app/tournois/actions";
+import { ConfirmButton } from "@/components/ConfirmButton";
+import { peutRefaireLeTirage } from "@/lib/tournoiPhase";
 import { SalleDeTirage } from "@/components/SalleDeTirage";
 
 function getPseudo(p: { profiles: { pseudo: string; avatar_url: string | null }[] | { pseudo: string; avatar_url: string | null } | null }) {
@@ -15,17 +21,17 @@ export default async function TablesPage({
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ erreur?: string }>;
+  searchParams: Promise<{ erreur?: string; retire?: string }>;
 }) {
   const { id } = await params;
-  const { erreur } = await searchParams;
+  const { erreur, retire } = await searchParams;
   const supabase = await createClient();
   const user = await getUser();
   if (!user) redirect("/connexion");
 
   const { data: tournament } = await supabase
     .from("tournaments")
-    .select("id, name, status")
+    .select("id, name, status, created_by, min_players")
     .eq("id", id)
     .single();
 
@@ -36,15 +42,19 @@ export default async function TablesPage({
   const { data: players } = await supabase
     .from("tournament_players")
     .select(
-      "player_id, table_number, seat_number, stack, profiles!tournament_players_player_id_fkey(pseudo, avatar_url)",
+      "player_id, table_number, seat_number, stack, buy_in_paid, profiles!tournament_players_player_id_fkey(pseudo, avatar_url)",
     )
     .eq("tournament_id", id)
     .eq("status", "inscrit")
-    .not("table_number", "is", null)
     .order("seat_number");
 
+  const peutRetirer =
+    peutRefaireLeTirage(tournament, user.id, players ?? []) && (players ?? []).length > 0;
+
   const tables = new Map<number, typeof players>();
-  for (const p of players ?? []) {
+  // Un joueur ajouté après le tirage n'a pas encore de place : il compte
+  // pour les conditions du re-tirage, pas pour l'affichage des tables.
+  for (const p of (players ?? []).filter((p) => p.table_number !== null)) {
     const list = tables.get(p.table_number!);
     if (list) list.push(p);
     else tables.set(p.table_number!, [p]);
@@ -79,6 +89,7 @@ export default async function TablesPage({
       ) : (
         <SalleDeTirage
           tournamentId={tournament.id}
+          retire={retire === "1"}
           tables={tableNumbers.map((tableNumber) => ({
             tableNumber,
             seats: tables.get(tableNumber)!.map((p) => {
@@ -93,6 +104,20 @@ export default async function TablesPage({
             }),
           }))}
         />
+      )}
+
+      {/* Refaire le tirage annule un placement que la salle a peut-être
+        * déjà vu : réservé à l'organisateur, et confirmé. */}
+      {peutRetirer && tableNumbers.length > 0 && (
+        <div className="flex justify-center">
+          <ConfirmButton
+            label="Refaire le tirage au sort"
+            confirmLabel="Refaire le tirage"
+            message="Les places actuelles seront remplacées par un nouveau tirage. Si les joueurs ont déjà vu leur table, ils devront la revérifier."
+            onConfirm={redrawTournamentSeating.bind(null, tournament.id)}
+            className="btn btn-secondary btn-sm"
+          />
+        </div>
       )}
 
       {tournament.status === "inscription" && canManage && tableNumbers.length > 0 && (

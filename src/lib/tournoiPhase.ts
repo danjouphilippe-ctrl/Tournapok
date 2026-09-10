@@ -44,3 +44,36 @@ export function peutDemarquerBuyIn(t: Pick<PhaseTournoi, "status">): boolean {
 export function detailsReplies(t: Pick<PhaseTournoi, "status">): boolean {
   return t.status !== "inscription";
 }
+
+export type ConditionsTirage = {
+  status: string;
+  created_by: string;
+  min_players: number;
+};
+
+/** Peut-on refaire le tirage des places ?
+ *
+ * Trois verrous, chacun avec sa raison :
+ *
+ * — Organisateur seulement, là où le premier tirage est ouvert aux
+ *   co-administrateurs. Refaire un tirage annule un résultat que la
+ *   salle a peut-être déjà vu : ce n'est pas un geste courant.
+ * — Avant le départ uniquement. Une fois les joueurs assis et les
+ *   jetons sur la table, les déplacer n'aurait aucun sens ; c'est
+ *   l'équilibrage des tables qui prend le relais.
+ * — Mêmes conditions que le premier tirage. On ne repart pas d'un état
+ *   que le démarrage lui-même aurait refusé.
+ *
+ * La même fonction sert au serveur, qui refuse, et à la page, qui
+ * n'affiche pas le bouton — pour ne jamais proposer un geste voué à
+ * l'échec. */
+export function peutRefaireLeTirage(
+  t: ConditionsTirage,
+  userId: string,
+  joueurs: { buy_in_paid: boolean }[],
+): boolean {
+  if (t.created_by !== userId) return false;
+  if (t.status !== "inscription") return false;
+  if (joueurs.length < t.min_players) return false;
+  return joueurs.every((j) => j.buy_in_paid);
+}
